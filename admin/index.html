@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Админ-панель — Аренда</title>
+<style>
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,sans-serif;background:#f6f0e4;color:#16222e}
+main{max-width:1100px;margin:0 auto;padding:20px}
+h1{font-size:22px;margin:0 0 14px}
+button,select,input,textarea{font:inherit}
+.b{padding:9px 16px;border-radius:99px;border:0;background:#0f2744;color:#fff;cursor:pointer;display:inline-block}
+.b.g{background:#fff;color:#0f2744;border:1px solid #c9c2b4}
+.b.r{background:#b4573f}
+.b:disabled{opacity:.55;cursor:not-allowed}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.hint{font-size:13px;color:#6a6358;margin:0 0 14px}
+.w{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:#fffaf2;border-radius:14px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid #e5ddcc;text-align:left;font-size:14px}
+td img{width:56px;height:42px;object-fit:cover;border-radius:6px;display:block}
+dialog{border:0;border-radius:20px;width:min(700px,calc(100% - 20px));max-height:94vh;padding:22px;overflow:auto}
+dialog::backdrop{background:rgba(8,18,32,.7)}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#6a6358}
+.f .c{grid-column:1/-1}
+.f input:not([type=file]),.f select,.f textarea{padding:9px;border:1px solid #c9c2b4;border-radius:10px;width:100%;background:white;color:#16222e}
+#lg{display:grid;place-items:center;min-height:100vh}
+#lf{background:#fffaf2;padding:28px;border-radius:20px;display:flex;flex-direction:column;gap:12px;width:min(320px,90%)}
+#lf input{padding:10px;border:1px solid #c9c2b4;border-radius:10px}
+.upload-box{border:1px dashed #a9a08f;border-radius:14px;padding:14px;background:#fffdf8;display:flex;flex-direction:column;gap:9px}
+.upload-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.file-label{position:relative;overflow:hidden}
+.file-label input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+#photoGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(116px,1fr));gap:10px}
+.photo-card{position:relative;border:1px solid #e5ddcc;border-radius:10px;padding:6px;background:#fff;min-width:0}
+.photo-card img{display:block;width:100%;height:94px;object-fit:cover;border-radius:7px;background:#eee}
+.photo-card span{display:block;font-size:11px;color:#6a6358;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.photo-card button{margin-top:5px;width:100%;padding:5px 8px;font-size:12px}
+.upload-note{font-size:12px;color:#6a6358;margin:0}
+#uploadStatus{font-size:12px;color:#0f6042;min-height:18px}
+.asset-panel{margin:18px 0;padding:16px;border:1px solid #e5ddcc;border-radius:16px;background:#fffaf2}
+.asset-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.asset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:14px}
+.asset-card{min-width:0;border:1px solid #e5ddcc;border-radius:12px;padding:10px;background:#fff}
+.asset-card img,.asset-empty{display:block;width:100%;height:116px;object-fit:cover;border-radius:8px;background:#eee}
+.asset-empty{display:grid;place-items:center;color:#6a6358;font-size:12px;text-align:center;padding:10px}
+.asset-card strong{display:block;font-size:13px;margin:8px 0}
+.asset-card .b{font-size:12px;padding:7px 10px;margin-top:7px}
+.asset-card input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.asset-file{position:relative;overflow:hidden}
+.asset-link-editor{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-top:14px;padding:12px;border:1px solid #e5ddcc;border-radius:12px;background:#fff}
+.asset-link-editor label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#6a6358}
+.asset-link-editor input{width:100%;min-width:0;padding:9px 11px;border:1px solid #c9c2b4;border-radius:10px;background:#fff;color:#16222e}
+#assetStatus{font-size:12px;color:#0f6042;min-height:18px;margin-top:8px}
+@media(max-width:600px){.f{grid-template-columns:1fr}.f .c{grid-column:auto}main{padding:14px}dialog{padding:16px}.asset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.asset-link-editor{grid-template-columns:1fr}.asset-link-editor .b{width:100%}}
+</style>
+</head>
+<body>
+<div id="lg"><form id="lf"><h1>Админ-панель</h1><input type="password" id="pw" placeholder="Пароль" autocomplete="current-password" required><button class="b">Войти</button></form></div>
+<main id="ap" hidden>
+  <h1>Объекты</h1>
+  <div class="bar">
+    <select id="fc" aria-label="Город"></select>
+    <button class="b" id="add">Добавить объект</button>
+    <button class="b g" id="ex">Скачать listings.js</button>
+    <label class="b g">Загрузить файл с объектами<input type="file" id="im" accept=".js,.json" hidden></label>
+    <button class="b g" id="rs">Сбросить локальные изменения</button>
+  </div>
+  <p class="hint">Изменения каталога сохраняются в этом браузере. Чтобы обновить каталог у всех посетителей, скачайте listings.js и замените им файл data/listings.js на хостинге.</p>
+  <section class="asset-panel">
+    <div class="asset-head"><div><h2>Изображения сайта</h2><p class="hint">Меняйте фон главной страницы, обложки категорий, городские изображения, предпросмотр ссылок и рекламный баннер. Для блока «Здесь могла быть ваша реклама» также можно отдельно изменить адрес перехода. Фото объектов редактируются внутри карточки.</p></div>
+      <div class="bar"><button class="b g" id="exportAssets" type="button">Скачать site-assets.js</button><label class="b g">Импорт настроек сайта<input type="file" id="importAssets" accept=".js,.json,application/json,text/javascript" hidden></label></div></div>
+    <div id="assetGrid" class="asset-grid"></div>
+    <div class="asset-link-editor">
+      <label for="adLinkInput">Ссылка рекламного блока «Здесь могла быть ваша реклама»
+        <input type="url" id="adLinkInput" placeholder="https://example.com" autocomplete="url" inputmode="url">
+      </label>
+      <button class="b" id="saveAdLink" type="button">Сохранить ссылку</button>
+    </div>
+    <div id="assetStatus" role="status" aria-live="polite"></div>
+    <p class="hint">После изменений скачайте site-assets.js и замените файл data/site-assets.js в репозитории сайта, затем отправьте commit/push в GitHub. После повторного развёртывания Render обновит баннер и ссылку для всех посетителей. До экспорта локальные изменения видны только в этом браузере.</p>
+  </section>
+  <div class="w"><table><thead><tr><th></th><th>Название</th><th>Район</th><th>Цена, сум</th><th>Статус</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+</main>
+<dialog id="dg"><form id="ef" method="dialog" class="f"></form></dialog>
+<script src="../data/listings.js"></script>
+<script src="../data/site-assets.js"></script>
+<script>
+'use strict';
+const PASS='adrfka2008',K='arenda_listings_v1',ASSET_KEY='rent_site_assets_v1',MAX_PHOTOS=12,MAX_LISTINGS_CHARS=2200000;
+const $=s=>document.querySelector(s);
+const CITIES=['Алмалык','Ташкент','Самарканд','Андижан','Наманган','Нукус','Фергана','Карши','Бухара','Коканд'];
+const CATS={flat:'Квартиры',house:'Дома и дачи',office:'Офисы',shop:'Магазины и склады'};
+const TERMS=['Посуточно','На месяц','Продажа'];
+const STS={free:'Свободно',rented:'Занято'};
+let A=null;
+try{A=JSON.parse(localStorage.getItem(K))}catch(_){}
+if(!Array.isArray(A))A=JSON.parse(JSON.stringify(window.LISTINGS||[]));
+const normalize=rows=>rows.map(o=>({...o,status:o.status==='rented'?'rented':'free',photos:Array.isArray(o.photos)?o.photos:[]}));
+const beforeNormalize=JSON.stringify(A);A=normalize(A);
+const serialized=()=>JSON.stringify(A);
+const save=()=>{
+  try{
+    const raw=serialized();
+    if(raw.length>MAX_LISTINGS_CHARS){alert('Данные слишком большие для локального хранения браузера. Удалите часть фотографий или загрузите изображения меньшего размера, затем повторите сохранение.');return false;}
+    localStorage.setItem(K,raw);return true;
+  }catch(_){alert('Браузер не смог сохранить изменения. Возможно, превышен лимит локального хранилища. Скачайте listings.js, чтобы сохранить текущие данные.');return false;}
+};
+const img=p=>/^(https?:|data:|blob:|\/)/.test(p)?p:'../'+p;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+if(JSON.stringify(A)!==beforeNormalize)save();
+const FLD=[
+  ['title','Название'],['city','Город',CITIES],['cat','Категория',CATS],['term','Срок',TERMS],
+  ['district','Район'],['area','Площадь, м²','number'],['rooms','Комнат (0 — не жилое)','number'],
+  ['floor','Этаж / участок'],['price','Цена, сум','number'],['status','Статус',STS],
+  ['phone','Телефон владельца (пусто — общий)'],['owner','Имя владельца'],
+  ['desc','Описание','textarea'],['features','Преимущества (по одному в строке)','textarea']
+];
+let city=CITIES[0],photoDraft=[],uploading=false;
+const ASSET_DEFS=[
+  ['home_desktop','Главная — фон для компьютера','../assets/img/7a7fc5e5.jpg'],
+  ['home_mobile','Главная — фон для телефона','../assets/img/6416a0d7.jpg'],
+  ['category_flat','Обложка категории — квартиры','../assets/img/2ebe49ee.jpg'],
+  ['category_house','Обложка категории — дома','../assets/img/2bfb3551.jpg'],
+  ['category_office','Обложка категории — офисы','../assets/img/749b4895.jpg'],
+  ['category_shop','Обложка категории — магазины и склады','../assets/img/9e927aa2.jpg'],
+  ['social_preview','Изображение предпросмотра ссылки','../assets/img/2ebe49ee.jpg'],
+  ['ad_image','Рекламный блок — изображение баннера',null],
+  ...['Алмалык','Ташкент','Самарканд','Андижан','Наманган','Нукус','Фергана','Карши','Бухара','Коканд'].flatMap((name)=>{const key={Алмалык:'almalyk',Ташкент:'tashkent',Самарканд:'samarkand',Андижан:'andijan',Наманган:'namangan',Нукус:'nukus',Фергана:'fergana',Карши:'karshi',Бухара:'bukhara',Коканд:'kokand'}[name];const fallbacks={Ташкент:['../assets/img/city-tashkent-desktop.jpg','../assets/img/city-tashkent-mobile.jpg'],Самарканд:['../assets/img/city-samarkand-desktop.jpg','../assets/img/city-samarkand-mobile.jpg'],Андижан:['../assets/img/city-andijan-desktop.jpg','../assets/img/city-andijan-mobile.jpg'],Наманган:['../assets/img/city-namangan-desktop.jpg','../assets/img/city-namangan-mobile.jpg'],Нукус:['../assets/img/city-nukus-desktop.jpg','../assets/img/city-nukus-mobile.jpg']}[name]||[null,null];return [[`city_${key}_desktop`,`Город ${name} — компьютер`,fallbacks[0]],[`city_${key}_mobile`,`Город ${name} — телефон`,fallbacks[1]]]})
+];
+let siteAssets={...(window.RENT_SITE_ASSETS||{})};
+try{siteAssets={...siteAssets,...JSON.parse(localStorage.getItem(ASSET_KEY)||'{}')}}catch(_){}
+function renderAssetGrid(){
+  $('#assetGrid').innerHTML=ASSET_DEFS.map(([key,label,fallback])=>{const src=siteAssets[key]||fallback;return `<div class="asset-card" data-asset-card="${key}">${src?`<img src="${esc(src)}" alt="${esc(label)}">`:'<div class="asset-empty">Изображение пока не задано</div>'}<strong>${esc(label)}</strong><label class="b g asset-file">Заменить изображение<input type="file" accept="image/*" data-asset-file="${key}"></label><button class="b g" type="button" data-asset-reset="${key}">Сбросить</button></div>`}).join('');
+}
+function saveSiteAssets(){
+  try{const raw=JSON.stringify(siteAssets);if(raw.length>4_200_000)throw new Error('Суммарный объём изображений слишком большой для локального хранилища.');localStorage.setItem(ASSET_KEY,raw);window.RENT_SITE_ASSETS=siteAssets;return true;}
+  catch(error){alert(error.message||'Не удалось сохранить изображения в браузере.');return false;}
+}
+renderAssetGrid();
+$('#adLinkInput').value=siteAssets.ad_link||'https://t.me/Resell_Tashkent';
+$('#saveAdLink').addEventListener('click',()=>{
+  const value=$('#adLinkInput').value.trim();
+  if(value){
+    let parsed;
+    try{parsed=new URL(value)}catch(_){alert('Введите корректную ссылку, например https://example.com');return;}
+    if(!['http:','https:'].includes(parsed.protocol)){alert('Разрешены только ссылки http:// и https://');return;}
+    siteAssets.ad_link=parsed.href;
+  }else{delete siteAssets.ad_link;}
+  if(saveSiteAssets())$('#assetStatus').textContent='Ссылка рекламного блока сохранена. Скачайте site-assets.js и замените файл в проекте сайта.';
+});
+const opts=(t,v)=>(Array.isArray(t)?t.map(x=>[x,x]):Object.entries(t)).map(([a,b])=>`<option value="${esc(a)}"${a===v?' selected':''}>${esc(b)}</option>`).join('');
+function list(){
+  $('#tb').innerHTML=A.filter(o=>o.city===city).map(o=>`<tr>
+    <td>${o.photos?.[0]?`<img src="${esc(img(o.photos[0]))}" alt="">`:''}</td>
+    <td>${esc(o.title)}</td><td>${esc(o.district)}</td>
+    <td>${(Number(o.price)||0).toLocaleString('ru-RU')}</td>
+    <td><select data-s="${o.id}">${opts(STS,o.status)}</select></td>
+    <td><button class="b g" data-e="${o.id}">Изменить</button> <button class="b r" data-d="${o.id}">Удалить</button></td>
+  </tr>`).join('')||'<tr><td colspan="6">Объектов нет — нажмите «Добавить объект».</td></tr>';
+}
+function drawPhotoDraft(){
+  const grid=$('#photoGrid');if(!grid)return;
+  grid.innerHTML=photoDraft.map((src,i)=>`<div class="photo-card">
+    <img src="${esc(img(src))}" alt="Фото ${i+1}">
+    <span>Фото ${i+1}</span>
+    <button class="b r" type="button" data-photo-remove="${i}">Удалить</button>
+  </div>`).join('')||'<p class="upload-note">Фотографии ещё не добавлены.</p>';
+}
+function edit(id){
+  const old=A.find(x=>x.id===id);
+  const o=old||{city,cat:'flat',term:'На месяц',status:'free'};
+  photoDraft=[...(Array.isArray(o.photos)?o.photos:[])];
+  $('#ef').innerHTML=FLD.map(([k,l,t])=>{
+    const v=o[k]??'',c=t==='textarea'||k==='title'?' class="c"':'';let control;
+    if(t==='textarea')control=`<textarea name="${k}" rows="3">${esc(Array.isArray(v)?v.join('\n'):v)}</textarea>`;
+    else if(t&&t!=='number')control=`<select name="${k}">${opts(t,v)}</select>`;
+    else control=`<input name="${k}" type="${t||'text'}" value="${esc(v)}">`;
+    return `<label${c}>${l}${control}</label>`;
+  }).join('')+
+  `<section class="c upload-box">
+    <strong>Фотографии объекта</strong>
+    <div id="photoGrid"></div>
+    <div class="upload-actions">
+      <label class="b file-label">Загрузить фотографии<input type="file" id="photoFiles" accept="image/*" multiple></label>
+      <span class="upload-note">Можно выбрать сразу несколько файлов</span>
+    </div>
+    <p class="upload-note">Поддерживаются JPG, PNG, WebP и другие форматы изображений. Фото автоматически уменьшаются до подходящего размера и сохраняются в карточке объекта. Максимум ${MAX_PHOTOS} фотографий на объект.</p>
+    <div id="uploadStatus" role="status" aria-live="polite"></div>
+  </section>
+  <div class="c bar"><button class="b" id="saveListing">Сохранить</button><button class="b g" type="button" id="cancelEdit">Отмена</button></div>`;
+  $('#ef').dataset.id=o.id||'';
+  drawPhotoDraft();
+  $('#dg').showModal();
+}
+function fileToDataURL(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('Ошибка чтения файла'));r.readAsDataURL(blob)});}
+async function compressImage(file){
+  if(!file.type.startsWith('image/'))throw new Error('Файл «'+file.name+'» не является изображением.');
+  let bitmap;
+  try{bitmap=await createImageBitmap(file)}catch(_){throw new Error('Не удалось открыть изображение «'+file.name+'».')}
+  const maxSide=1600,scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+  const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close?.();
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Не удалось обработать «'+file.name+'».')),'image/webp',0.78));
+  return fileToDataURL(blob);
+}
+
+$('#assetGrid').addEventListener('change',async e=>{
+  const input=e.target.closest('[data-asset-file]');if(!input)return;
+  const key=input.dataset.assetFile,file=input.files?.[0];input.value='';if(!file)return;
+  $('#assetStatus').textContent='Обработка изображения…';
+  try{const previous=siteAssets[key];siteAssets[key]=await compressImage(file);if(!saveSiteAssets()){if(previous===undefined)delete siteAssets[key];else siteAssets[key]=previous;return;}renderAssetGrid();$('#assetStatus').textContent='Изображение сохранено в браузере. Не забудьте скачать site-assets.js.';}
+  catch(error){$('#assetStatus').textContent='Не удалось обработать изображение.';alert(error.message||'Ошибка загрузки изображения.');}
+});
+$('#assetGrid').addEventListener('click',e=>{const b=e.target.closest('[data-asset-reset]');if(!b)return;delete siteAssets[b.dataset.assetReset];saveSiteAssets();renderAssetGrid();$('#assetStatus').textContent='Вернулось исходное изображение. Скачайте site-assets.js, чтобы обновить сайт.';});
+$('#exportAssets').onclick=()=>{const blob=new Blob(['window.RENT_SITE_ASSETS = '+JSON.stringify(siteAssets,null,2)+';\n'],{type:'text/javascript;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='site-assets.js';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+$('#importAssets').onchange=e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;const r=new FileReader();r.onload=()=>{try{const raw=String(r.result).trim().replace(/^window\.RENT_SITE_ASSETS\s*=\s*/, '').replace(/;\s*$/,'');const parsed=JSON.parse(raw);if(!parsed||Array.isArray(parsed)||typeof parsed!=='object')throw new Error();siteAssets=parsed;if(saveSiteAssets()){renderAssetGrid();$('#adLinkInput').value=siteAssets.ad_link||'https://t.me/Resell_Tashkent';$('#assetStatus').textContent='Файл изображений и настройки рекламного блока импортированы.';}}catch(_){alert('Не удалось прочитать файл site-assets.js или JSON.');}};r.readAsText(file);};
+$('#ef').addEventListener('change',async e=>{
+  if(e.target.id!=='photoFiles')return;
+  const files=[...e.target.files||[]];e.target.value='';if(!files.length)return;
+  const remaining=MAX_PHOTOS-photoDraft.length;
+  if(remaining<=0){alert(`В объекте уже максимально допустимое количество фотографий: ${MAX_PHOTOS}.`);return;}
+  if(files.length>remaining){alert(`Можно добавить ещё ${remaining} фото. Лишние файлы не будут обработаны.`);files.length=remaining;}
+  uploading=true;const status=$('#uploadStatus');status.textContent='Обработка фотографий…';
+  $('#saveListing').disabled=true;
+  try{
+    for(const file of files){
+      const data=await compressImage(file);
+      const candidate=[...photoDraft,data];
+      const currentId=+$('#ef').dataset.id;
+      const candidateRows=A.map(row=>row.id===currentId?{...row,photos:candidate}:row);
+      if(!currentId)candidateRows.push({id:Math.max(0,...A.map(x=>x.id))+1,photos:candidate});
+      if(JSON.stringify(candidateRows).length>MAX_LISTINGS_CHARS){alert('Фотография слишком велика для локального хранилища. Удалите часть фотографий или выберите файл меньшего размера.');break;}
+      photoDraft.push(data);drawPhotoDraft();
+    }
+    status.textContent='Фотографии готовы. Нажмите «Сохранить», чтобы прикрепить их к объекту.';
+  }catch(err){alert(err.message||'Не удалось загрузить фотографию.');status.textContent='Не все фотографии удалось обработать.';}
+  finally{uploading=false;$('#saveListing').disabled=false;}
+});
+$('#ef').addEventListener('click',e=>{
+  const remove=e.target.closest('[data-photo-remove]');
+  if(remove){photoDraft.splice(+remove.dataset.photoRemove,1);drawPhotoDraft();$('#uploadStatus').textContent='Фото удалено из черновика. Нажмите «Сохранить», чтобы применить изменение.';}
+  if(e.target.id==='cancelEdit')$('#dg').close();
+});
+$('#ef').onsubmit=e=>{
+  e.preventDefault();if(uploading)return;
+  const d=Object.fromEntries(new FormData(e.target)),id=+e.target.dataset.id;
+  const ln=s=>String(s||'').split('\n').map(x=>x.trim()).filter(Boolean);
+  const old=A.find(x=>x.id===id)||{};
+  const o={...old,...d,id:id||Math.max(0,...A.map(x=>x.id))+1,area:+d.area||0,rooms:+d.rooms||0,price:+d.price||0,features:ln(d.features),photos:[...photoDraft],unit:d.term==='Посуточно'?'сутки':d.term==='На месяц'?'мес':''};
+  const i=A.findIndex(x=>x.id===o.id);const prev=A;
+  i<0?A.push(o):A[i]=o;
+  if(!save()){A=prev;return;}
+  city=o.city;$('#fc').value=city;list();$('#dg').close();
+};
+$('#tb').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.e)edit(+b.dataset.e);
+  if(b.dataset.d&&confirm('Удалить объект?')){const prev=A;A=A.filter(x=>x.id!==+b.dataset.d);if(!save())A=prev;list();}
+};
+$('#tb').onchange=e=>{const s=e.target.dataset.s;if(s){const o=A.find(x=>x.id===+s),prev=o.status;o.status=e.target.value;if(!save())o.status=prev;}};
+$('#add').onclick=()=>edit();
+$('#fc').innerHTML=opts(CITIES,city);$('#fc').onchange=e=>{city=e.target.value;list()};
+$('#ex').onclick=()=>{const blob=new Blob(['window.LISTINGS='+JSON.stringify(A,null,1)+';'],{type:'text/javascript;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='listings.js';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+$('#im').onchange=e=>{
+  const file=e.target.files[0];e.target.value='';if(!file)return;
+  const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(String(r.result).replace(/^[^[]*/,'').replace(/;\s*$/,''));if(!Array.isArray(d))throw 0;const prev=A;A=normalize(d);if(!save())A=prev;list()}catch(_){alert('Не удалось прочитать файл. Используйте корректный listings.js или JSON.')}};r.readAsText(file);
+};
+$('#rs').onclick=()=>{if(confirm('Вернуть данные из data/listings.js?')){localStorage.removeItem(K);location.reload()}};
+const start=()=>{$('#lg').hidden=true;$('#ap').hidden=false;list()};
+$('#lf').onsubmit=e=>{e.preventDefault();if($('#pw').value===PASS){sessionStorage.setItem('ok','1');start()}else alert('Неверный пароль')};
+if(sessionStorage.getItem('ok'))start();
+</script>
+</body>
+</html>
