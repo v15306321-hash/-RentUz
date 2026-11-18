@@ -50,6 +50,8 @@ def create_dispatcher() -> Dispatcher:
 async def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     await init_db()
+    from services.crypto_pay import check_token
+    log.info("Crypto Pay token check: %s", await check_token())
 
     bot = Bot(token=BOT_TOKEN)
     dp = create_dispatcher()
