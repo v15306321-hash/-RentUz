@@ -1,0 +1,908 @@
+{
+ "almalyk": {
+  "name": {
+   "ru": "Алмалык",
+   "uz": "Olmaliq",
+   "en": "Almalyk"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Город Алмалык",
+     "uz": "Olmaliq shahri",
+     "en": "Almalyk city"
+    },
+    "microdistricts": [
+     {
+      "ru": "Ойдин",
+      "uz": "Oydin",
+      "en": "Oydin"
+     },
+     {
+      "ru": "Радуга",
+      "uz": "Raduga",
+      "en": "Raduga"
+     },
+     {
+      "ru": "Телеграф",
+      "uz": "Telegraf",
+      "en": "Telegraf"
+     },
+     {
+      "ru": "Космос",
+      "uz": "Kosmos",
+      "en": "Kosmos"
+     },
+     {
+      "ru": "ГорГаз",
+      "uz": "GorGaz",
+      "en": "GorGaz"
+     },
+     {
+      "ru": "5/1",
+      "uz": "5/1",
+      "en": "5/1"
+     },
+     {
+      "ru": "5/2",
+      "uz": "5/2",
+      "en": "5/2"
+     },
+     {
+      "ru": "5/3",
+      "uz": "5/3",
+      "en": "5/3"
+     },
+     {
+      "ru": "Нижняя терраса",
+      "uz": "Quyi terrasа",
+      "en": "Lower Terrace"
+     },
+     {
+      "ru": "67-квартал",
+      "uz": "67-kvartal",
+      "en": "Block 67"
+     },
+     {
+      "ru": "Чехово",
+      "uz": "Chexovo",
+      "en": "Chekhovo"
+     },
+     {
+      "ru": "Гагарино",
+      "uz": "Gagarino",
+      "en": "Gagarino"
+     },
+     {
+      "ru": "Старый базар",
+      "uz": "Eski bozor",
+      "en": "Old Bazaar"
+     },
+     {
+      "ru": "Шанхай",
+      "uz": "Shanxay",
+      "en": "Shanghai"
+     },
+     {
+      "ru": "Навруз",
+      "uz": "Navro‘z",
+      "en": "Navruz"
+     },
+     {
+      "ru": "Интернат",
+      "uz": "Internat",
+      "en": "Internat"
+     },
+     {
+      "ru": "ДСК",
+      "uz": "DSK",
+      "en": "DSK"
+     },
+     {
+      "ru": "Депо",
+      "uz": "Depo",
+      "en": "Depot"
+     },
+     {
+      "ru": "Хим. Городок",
+      "uz": "Kimyogarlar shaharchasi",
+      "en": "Chemical Town"
+     }
+    ]
+   }
+  ]
+ },
+ "tashkent": {
+  "name": {
+   "ru": "Ташкент",
+   "uz": "Toshkent",
+   "en": "Tashkent"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Бектемирский",
+     "uz": "Bektemir",
+     "en": "Bektemir"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Мирабадский",
+     "uz": "Mirobod",
+     "en": "Mirobad"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Мирзо-Улугбекский",
+     "uz": "Mirzo Ulug‘bek",
+     "en": "Mirzo Ulugbek"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Сергелийский",
+     "uz": "Sergeli",
+     "en": "Sergeli"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Алмазарский",
+     "uz": "Olmazor",
+     "en": "Olmazor"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Учтепинский",
+     "uz": "Uchtepa",
+     "en": "Uchtepa"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Чиланзарский",
+     "uz": "Chilonzor",
+     "en": "Chilanzar"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Шайхантахурский",
+     "uz": "Shayxontohur",
+     "en": "Shaykhantakhur"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Юнусабадский",
+     "uz": "Yunusobod",
+     "en": "Yunusabad"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Яккасарайский",
+     "uz": "Yakkasaroy",
+     "en": "Yakkasaray"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Яшнабадский",
+     "uz": "Yashnobod",
+     "en": "Yashnabad"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Янгихаётский",
+     "uz": "Yangihayot",
+     "en": "Yangihayot"
+    },
+    "microdistricts": []
+   }
+  ]
+ },
+ "samarkand": {
+  "name": {
+   "ru": "Самарканд",
+   "uz": "Samarqand",
+   "en": "Samarkand"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Центр",
+     "uz": "Markaz",
+     "en": "Center"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Сиаб",
+     "uz": "Siyob",
+     "en": "Siyob"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Дагбит",
+     "uz": "Dag‘bit",
+     "en": "Dagbit"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Регистан",
+     "uz": "Registon",
+     "en": "Registan"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Университетский бульвар",
+     "uz": "Universitet xiyoboni",
+     "en": "University Blvd"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Западный",
+     "uz": "G‘arbiy",
+     "en": "West"
+    },
+    "microdistricts": []
+   }
+  ]
+ },
+ "andijan": {
+  "name": {
+   "ru": "Андижан",
+   "uz": "Andijon",
+   "en": "Andijan"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Центр",
+     "uz": "Markaz",
+     "en": "Center"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Северный",
+     "uz": "Shimoliy",
+     "en": "North"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Южный",
+     "uz": "Janubiy",
+     "en": "South"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Восточный",
+     "uz": "Sharqiy",
+     "en": "East"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Западный",
+     "uz": "G‘arbiy",
+     "en": "West"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Новый город",
+     "uz": "Yangi shahar",
+     "en": "New city"
+    },
+    "microdistricts": []
+   }
+  ]
+ },
+ "namangan": {
+  "name": {
+   "ru": "Наманган",
+   "uz": "Namangan",
+   "en": "Namangan"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Центр",
+     "uz": "Markaz",
+     "en": "Center"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Северный",
+     "uz": "Shimoliy",
+     "en": "North"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Южный",
+     "uz": "Janubiy",
+     "en": "South"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Восточный",
+     "uz": "Sharqiy",
+     "en": "East"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Западный",
+     "uz": "G‘arbiy",
+     "en": "West"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Новый город",
+     "uz": "Yangi shahar",
+     "en": "New city"
+    },
+    "microdistricts": []
+   }
+  ]
+ },
+ "nukus": {
+  "name": {
+   "ru": "Нукус",
+   "uz": "Nukus",
+   "en": "Nukus"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Центр",
+     "uz": "Markaz",
+     "en": "Center"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Северный",
+     "uz": "Shimoliy",
+     "en": "North"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Южный",
+     "uz": "Janubiy",
+     "en": "South"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Восточный",
+     "uz": "Sharqiy",
+     "en": "East"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Западный",
+     "uz": "G‘arbiy",
+     "en": "West"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Новый город",
+     "uz": "Yangi shahar",
+     "en": "New city"
+    },
+    "microdistricts": []
+   }
+  ]
+ },
+ "fergana": {
+  "name": {
+   "ru": "Фергана",
+   "uz": "Farg‘ona",
+   "en": "Fergana"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Центр",
+     "uz": "Markaz",
+     "en": "Center"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Северный",
+     "uz": "Shimoliy",
+     "en": "North"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Южный",
+     "uz": "Janubiy",
+     "en": "South"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Восточный",
+     "uz": "Sharqiy",
+     "en": "East"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Западный",
+     "uz": "G‘arbiy",
+     "en": "West"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Новый город",
+     "uz": "Yangi shahar",
+     "en": "New city"
+    },
+    "microdistricts": []
+   }
+  ]
+ },
+ "karshi": {
+  "name": {
+   "ru": "Карши",
+   "uz": "Qarshi",
+   "en": "Karshi"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Центр",
+     "uz": "Markaz",
+     "en": "Center"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Северный",
+     "uz": "Shimoliy",
+     "en": "North"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Южный",
+     "uz": "Janubiy",
+     "en": "South"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Восточный",
+     "uz": "Sharqiy",
+     "en": "East"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Западный",
+     "uz": "G‘arbiy",
+     "en": "West"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Новый город",
+     "uz": "Yangi shahar",
+     "en": "New city"
+    },
+    "microdistricts": []
+   }
+  ]
+ },
+ "bukhara": {
+  "name": {
+   "ru": "Бухара",
+   "uz": "Buxoro",
+   "en": "Bukhara"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Сайфиддин Бохарзий",
+     "uz": "Сайфиддин Бохарзий",
+     "en": "Сайфиддин Бохарзий"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Кўкалдош",
+     "uz": "Кўкалдош",
+     "en": "Кўкалдош"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Жўйбор",
+     "uz": "Жўйбор",
+     "en": "Жўйбор"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Дилкушо",
+     "uz": "Дилкушо",
+     "en": "Дилкушо"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Шергирон",
+     "uz": "Шергирон",
+     "en": "Шергирон"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Чорбоқхосса",
+     "uz": "Чорбоқхосса",
+     "en": "Чорбоқхосса"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Шайхул Олам",
+     "uz": "Шайхул Олам",
+     "en": "Шайхул Олам"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Турки Жанди",
+     "uz": "Турки Жанди",
+     "en": "Турки Жанди"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Гулчорбоғ",
+     "uz": "Гулчорбоғ",
+     "en": "Гулчорбоғ"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Ҳавзинав",
+     "uz": "Ҳавзинав",
+     "en": "Ҳавзинав"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Ширбудин",
+     "uz": "Ширбудин",
+     "en": "Ширбудин"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Отбозор",
+     "uz": "Отбозор",
+     "en": "Отбозор"
+    },
+    "microdistricts": []
+   }
+  ]
+ },
+ "kokand": {
+  "name": {
+   "ru": "Коканд",
+   "uz": "Qo‘qon",
+   "en": "Kokand"
+  },
+  "districts": [
+   {
+    "name": {
+     "ru": "Гиштли Масжид",
+     "uz": "Гиштли Масжид",
+     "en": "Гиштли Масжид"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Вакф Чорсу",
+     "uz": "Вакф Чорсу",
+     "en": "Вакф Чорсу"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Тугонбоши",
+     "uz": "Тугонбоши",
+     "en": "Тугонбоши"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Янги Чорсу",
+     "uz": "Янги Чорсу",
+     "en": "Янги Чорсу"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Каландархона",
+     "uz": "Каландархона",
+     "en": "Каландархона"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Ёр Бозори",
+     "uz": "Ёр Бозори",
+     "en": "Ёр Бозори"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Чархини Куприги",
+     "uz": "Чархини Куприги",
+     "en": "Чархини Куприги"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Исфара Гузари",
+     "uz": "Исфара Гузари",
+     "en": "Исфара Гузари"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Каймокли Гузар",
+     "uz": "Каймокли Гузар",
+     "en": "Каймокли Гузар"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Мисгарлик",
+     "uz": "Мисгарлик",
+     "en": "Мисгарлик"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Дегрезлик",
+     "uz": "Дегрезлик",
+     "en": "Дегрезлик"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Нонвойлик Гузари",
+     "uz": "Нонвойлик Гузари",
+     "en": "Нонвойлик Гузари"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Шайхон",
+     "uz": "Шайхон",
+     "en": "Шайхон"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Гишткуприк",
+     "uz": "Гишткуприк",
+     "en": "Гишткуприк"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Галчасой",
+     "uz": "Галчасой",
+     "en": "Галчасой"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Темирйули",
+     "uz": "Темирйули",
+     "en": "Темирйули"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Чорчинор",
+     "uz": "Чорчинор",
+     "en": "Чорчинор"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Исломабад",
+     "uz": "Исломабад",
+     "en": "Исломабад"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Кушчинор",
+     "uz": "Кушчинор",
+     "en": "Кушчинор"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Алишер Навои",
+     "uz": "Алишер Навои",
+     "en": "Алишер Навои"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Ок Олтин",
+     "uz": "Ок Олтин",
+     "en": "Ок Олтин"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Нурафшон",
+     "uz": "Нурафшон",
+     "en": "Нурафшон"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Навбахор",
+     "uz": "Навбахор",
+     "en": "Навбахор"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Истиклол",
+     "uz": "Истиклол",
+     "en": "Истиклол"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Навруз",
+     "uz": "Навруз",
+     "en": "Навруз"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Дустлик",
+     "uz": "Дустлик",
+     "en": "Дустлик"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Бунёдкор",
+     "uz": "Бунёдкор",
+     "en": "Бунёдкор"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Олтин Водий",
+     "uz": "Олтин Водий",
+     "en": "Олтин Водий"
+    },
+    "microdistricts": []
+   },
+   {
+    "name": {
+     "ru": "Мукимий",
+     "uz": "Мукимий",
+     "en": "Мукимий"
+    },
+    "microdistricts": []
+   }
+  ]
+ }
+}

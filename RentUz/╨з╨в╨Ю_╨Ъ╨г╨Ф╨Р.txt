@@ -1,0 +1,12 @@
+Загружать в корень репозитория -RentUz на GitHub (Add file -> Upload files):
+
+  bot/            новая папка с ботом (перетащить целиком)
+  js/app.js       заменит старый (сайт теперь берёт объявления и рекламу из бота)
+  js/config.js    заменит старый (адрес бота https://rentuz.onrender.com)
+  index.html      заменит старый (кнопки "Выставить объект" ведут сразу в анкету бота)
+  .gitignore      не даёт случайно загрузить пароли и базы
+
+Остальные файлы сайта (admin, assets, css, data, README, robots, sitemap) НЕ трогать.
+
+После загрузки удалить из репозитория: main.py, requirements.txt, runtime.txt
+(и render-build.sh — см. сообщение в чате).

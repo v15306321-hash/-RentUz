@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="RENT UZBEKISTAN — каталог квартир, домов, офисов, магазинов и складов в городах Узбекистана.">
+<meta name="theme-color" content="#0f2744">
+<meta property="og:type" content="website"><meta property="og:locale" content="ru_RU"><meta property="og:title" content="RENT UZBEKISTAN — недвижимость в аренду и продажу"><meta property="og:description" content="Квартиры, дома, офисы, магазины и склады в городах Узбекистана.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230f2744'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23f6f0e4'/%3E%3C/svg%3E">
+<title>RENT UZBEKISTAN — аренда и продажа недвижимости</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css"><link rel="canonical" href="https://YOUR-DOMAIN.uz/">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:url" content="https://YOUR-DOMAIN.uz/"><meta property="og:image" content="https://YOUR-DOMAIN.uz/assets/img/2ebe49ee.jpg"><meta property="og:site_name" content="RENT UZBEKISTAN"><meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"RealEstateAgent","name":"RENT UZBEKISTAN","url":"https://YOUR-DOMAIN.uz/","areaServed":{"@type":"Country","name":"Uzbekistan"},"address":{"@type":"PostalAddress","addressCountry":"UZ"},"sameAs":["https://t.me/Resell_Tashkent"]}</script>
+</head><body>
+<header class="hd" id="hd"><div class="cs" id="cs"><button type="button" id="cb" aria-haspopup="listbox" aria-expanded="false" aria-label="Выберите город"><span id="cv">Алмалык</span></button><ul id="cu" role="listbox" hidden><li><button type="button" role="option" data-c="Алмалык">Алмалык</button></li><li><button type="button" role="option" data-c="Ташкент">Ташкент</button></li><li><button type="button" role="option" data-c="Самарканд">Самарканд</button></li><li><button type="button" role="option" data-c="Андижан">Андижан</button></li><li><button type="button" role="option" data-c="Наманган">Наманган</button></li><li><button type="button" role="option" data-c="Нукус">Нукус</button></li><li><button type="button" role="option" data-c="Фергана">Фергана</button></li><li><button type="button" role="option" data-c="Карши">Карши</button></li><li><button type="button" role="option" data-c="Бухара">Бухара</button></li><li><button type="button" role="option" data-c="Коканд">Коканд</button></li></ul></div>
+<nav class="lk" id="lk" aria-label="Основное меню"><a href="#directions">Направления</a><a href="#catalog">Каталог</a><a href="https://t.me/Arenda_UZB_bot?start=list" target="_blank" rel="noopener noreferrer">Выставить объект</a><a href="#contacts">Контакты</a><a data-tg class="btn sm">Связаться</a></nav>
+<button class="bgr" id="bgr" aria-label="Меню" aria-expanded="false">☰</button></header>
+
+<section id="home"><picture id="cityHero" class="city-hero" hidden><source id="cityHeroMobile" media="(max-width: 760px)"><img id="cityHeroImage" alt="Городской пейзаж" decoding="async" fetchpriority="high"></picture><h1>Аренда квартир,<br>домов и помещений<br>для бизнеса</h1>
+<div class="hb"><p>Подбираем жильё и коммерческие площади <span class="cl">в Алмалыке</span>: показываем проверенные варианты, объясняем условия и помогаем оформить договор.</p><div class="bt"><a data-tg class="btn w">Подобрать объект</a><a class="btn gl" href="#catalog">Смотреть каталог</a></div></div></section>
+
+<div class="wrap">
+<section class="s" id="directions"><div class="hdg"><h2>Четыре направления аренды</h2><p>Жильё для семьи или помещение для дела — выберите, что ищете, и посмотрите подходящие объекты.</p></div><div class="dirs" id="dirs"></div></section>
+
+<section class="s" id="catalog"><div class="hdg"><h2>Каталог объектов</h2><p>Нажмите на объект, чтобы открыть страницу с подробным описанием. Адрес и свободные даты сообщаем при записи на просмотр.</p></div>
+<form class="flt" id="flt" role="search" aria-label="Поиск объектов">
+<label>Поиск<input name="q" type="search" placeholder="Название или описание"></label>
+<label>Район<select name="dist"></select></label>
+<label>Цена от, сум<input name="pmin" type="number" min="0" inputmode="numeric"></label>
+<label>Цена до, сум<input name="pmax" type="number" min="0" inputmode="numeric"></label>
+<label>Площадь от, м²<input name="amin" type="number" min="0" inputmode="numeric"></label>
+<label>Площадь до, м²<input name="amax" type="number" min="0" inputmode="numeric"></label>
+<label>Комнаты<select name="rooms"><option value="">Любые</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4 и больше</option></select></label>
+<label>Статус<select name="st"><option value="">Любой</option><option value="free">Свободно</option><option value="rented">Занято</option></select></label>
+<label>Сортировка<select name="sort"><option value="">По умолчанию</option><option value="p">Сначала дешевле</option><option value="d">Сначала дороже</option><option value="a">Сначала просторнее</option></select></label>
+<div class="fa"><button type="button" id="fv">♥ Избранное <b id="fn">0</b></button><button type="reset">Сбросить</button><span id="fc" aria-live="polite"></span></div>
+</form><div class="tabs" id="dtabs"></div><div class="tabs" id="tabs"></div><div class="gal" id="gal"></div><p class="note">Список обновляется. Не нашли подходящее — напишите нам, подберём под ваш бюджет и район.</p></section>
+
+<section class="s adv" id="adv"><a class="ad" id="adBanner" href="https://t.me/Resell_Tashkent" target="_blank" rel="noopener noreferrer" aria-label="Рекламный блок RENT UZBEKISTAN"><img class="ad-image" id="adImage" alt="Рекламный баннер" hidden><span class="ad-placeholder" id="adPlaceholder"><b>Здесь могла быть ваша реклама</b><span>выставить свою рекламу сюда</span></span></a></section>
+
+<section class="s" id="owner">
+<div class="hdg">
+<h2>Выставить свою недвижимость</h2>
+<p>Хотите сдать или продать квартиру, дом, офис или склад <span class="cl">в Алмалыке</span>? Заполните анкету в нашем Telegram-боте — он автоматически соберёт информацию об объекте. Не нужно ждать ответа менеджера.</p>
+</div>
+<div class="ow">
+<div class="of owner-bot-card">
+<div class="owner-bot-icon" aria-hidden="true">↗</div>
+<h3>Добавьте объект через автоматизированного бота</h3>
+<p>Бот последовательно запросит необходимые параметры недвижимости и передаст заявку на обработку.</p>
+<a class="btn owner-bot-btn" href="https://t.me/Arenda_UZB_bot?start=list" target="_blank" rel="noopener noreferrer">Перейти в Telegram-бот</a>
+<small>Откроется Telegram. Нажмите «Запустить» и следуйте инструкциям бота.</small>
+</div>
+<ul class="os">
+<li><b>1. Перейдите в бота</b><span>Откройте @Arenda_UZB_bot в Telegram и нажмите «Запустить».</span></li>
+<li><b>2. Заполните анкету</b><span>Укажите город и район, параметры недвижимости, стоимость, телефон и загрузите фотографии.</span></li>
+<li><b>3. Оплатите размещение</b><span>Бот сформирует заявку и предложит доступные способы оплаты. Администратор проверяет только поступление оплаты.</span></li>
+<li><b>4. Автоматическая публикация</b><span>После подтверждения оплаты объявление автоматически появится в каталоге сайта.</span></li>
+</ul>
+</div>
+</section>
+
+
+<section class="s" id="safety"><div class="hdg"><h2>Важная информация</h2><p>Пожалуйста, ознакомьтесь с рекомендациями по безопасности до того, как договариваться о сделке.</p></div>
+<div class="sn"><i aria-hidden="true">!</i><p><b>В целях безопасности</b> сообщаем: сайт носит информационный характер, не имеет отношения к продавцам и арендодателям и не является стороной сделок между ними и клиентами.</p></div>
+<div class="wy"><div><span class="n">1</span><h3>Проверяйте документы</h3><p>Перед покупкой или арендой обязательно сверьте полный перечень документов на объект.</p></div><div><span class="n">2</span><h3>Не вносите деньги заранее</h3><p>Не передавайте денежные средства до личной встречи с владельцем или получения ключей от арендуемого объекта.</p></div></div></section>
+</div>
+
+<footer id="contacts"><h2>Подберём место под вашу задачу?</h2><p>Напишите в Telegram — расскажите, что ищете, и мы предложим варианты.</p><a data-tg class="btn">Написать в Telegram</a>
+<nav class="fn"><a href="#directions">Направления</a><a href="#catalog">Каталог</a><a href="https://t.me/Arenda_UZB_bot?start=list" target="_blank" rel="noopener noreferrer">Выставить объект</a><a href="#safety">Безопасность</a><a data-tg>Telegram</a></nav><small><span class="cn">Алмалык</span> · УЗБЕКИСТАН · © <span id="yr">2026</span></small></footer>
+
+<div id="obj"></div>
+
+<script src="data/listings.js"></script>
+<script src="data/site-assets.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script></body></html>
