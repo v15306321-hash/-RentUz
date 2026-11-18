@@ -198,5 +198,7 @@ async function loadBotAds(){
 }
 
 let sv=null;try{sv=localStorage.getItem('city')}catch(_){}
-setCity(CT[sv]?sv:'Алмалык');route();
+/* Ссылка из бота: ?city=Ташкент&deal=sale — открыть сразу нужный город и тип сделки. */
+const QS=new URLSearchParams(location.search),qCity=QS.get('city');if(QS.get('deal')==='sale')dl='Приобрести';
+setCity(CT[qCity]?qCity:CT[sv]?sv:'Алмалык');route();
 loadBotListings();loadBotAds();

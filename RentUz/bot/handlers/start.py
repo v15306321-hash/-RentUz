@@ -16,7 +16,7 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     Message,
 )
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 from config import BOT_USERNAME, OWNER_CHAT_ID, SITE_URL
 from database.db import (
@@ -30,7 +30,6 @@ from database.db import (
     get_user,
     referral_stats,
     register_referral,
-    search_published,
     update_draft_progress,
     update_order,
     update_user,
@@ -477,10 +476,13 @@ async def menu_ad(message: Message, state: FSMContext):
 
 @router.message(F.text.in_(all_variants("menu_language")))
 async def menu_language(message: Message, state: FSMContext):
-    language = await _language(message, state)
-    await state.set_data({"language": language, "change_language": True})
-    await state.set_state(Onboarding.language)
-    await message.answer(tr(language, "language_prompt"), reply_markup=language_keyboard())
+    """Кнопка подписана на другом языке и сразу переключает на него."""
+    current = await _language(message, state)
+    language = "uz" if current == "ru" else "ru"
+    await update_user(message.from_user.id, language=language)
+    await state.set_state(None)
+    await state.set_data({"language": language})
+    await message.answer(tr(language, "language_saved"), reply_markup=main_menu_keyboard(language))
 
 
 @router.message(F.text.in_(all_variants("menu_fee")))
@@ -516,9 +518,18 @@ async def menu_support(message: Message, state: FSMContext):
 
 # ------------------------------------------------------------------ language
 
+def _language_from_text(text: str | None) -> str | None:
+    value = (text or "").lower()
+    if "рус" in value or "🇷🇺" in value:
+        return "ru"
+    if "zbek" in value or "o‘zbek" in value or "🇺🇿" in value:
+        return "uz"
+    return None
+
+
 @router.message(Onboarding.language, F.text)
 async def choose_language(message: Message, state: FSMContext):
-    language = next((code for code, label in LANGUAGES.items() if label in message.text), None)
+    language = _language_from_text(message.text)
     if not language:
         await message.answer(tr("ru", "language_prompt"), reply_markup=language_keyboard())
         return
@@ -575,21 +586,24 @@ async def search_deal_handler(message: Message, state: FSMContext):
         await message.answer(tr(language, "invalid_choice"), reply_markup=deal_keyboard(language))
         return
 
-    total, results = await search_published(city_key=data.get("city_key"), purpose=purpose, limit=5)
+    city = label_for((city_entry(data.get("city_key")) or {}).get("name", {}), language) or data.get("city")
     await _show_main_silent(state, language)
-    if not results:
-        await message.answer(tr(language, "search_empty", city=data.get("city")), reply_markup=main_menu_keyboard(language))
-        return
-    await message.answer(tr(language, "search_found", count=total), reply_markup=main_menu_keyboard(language))
-    for item in results:
-        caption = "\n".join([f"🏠 {item['order_number']}"] + listing_summary_lines(item, language))[:1024]
-        photos = await get_order_photos(item["id"])
-        if photos:
-            await message.answer_photo(photos[0]["file_id"], caption=caption)
-        else:
-            await message.answer(caption)
-    if SITE_URL:
-        await message.answer(tr(language, "search_more_site", url=SITE_URL), disable_web_page_preview=True)
+    deal = tr(language, "search_deal_sale" if purpose == "sale" else "search_deal_rent")
+    await message.answer(
+        tr(language, "search_site_info", city=city, deal=deal),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text=tr(language, "site_button"), url=_site_search_url(data.get("city_key"), purpose))
+        ]]),
+    )
+    await message.answer(tr(language, "main_title"), reply_markup=main_menu_keyboard(language))
+
+def _site_search_url(city_key: str | None, purpose: str) -> str:
+    city_ru = label_for((city_entry(city_key) or {}).get("name", {}), "ru")
+    params = {"city": city_ru} if city_ru else {}
+    if purpose == "sale":
+        params["deal"] = "sale"
+    query = f"?{urlencode(params)}" if params else ""
+    return f"{SITE_URL}/{query}#catalog"
 
 
 async def _show_main_silent(state: FSMContext, language: str) -> None:

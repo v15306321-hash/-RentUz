@@ -1,8 +1,15 @@
 # localization.py
 LANGUAGES = {
-    "ru": "Русский",
-    "uz": "O'zbekcha",
+    "ru": "Русский язык 🇷🇺",
+    "uz": "O'zbek tili 🇺🇿",
 }
+
+LANGUAGE_PROMPT = (
+    "👋 Добро пожаловать в RENT UZBEKISTAN! 🇷🇺\n"
+    "Пожалуйста, выберите удобный для вас язык.\n\n"
+    "👋 RENT UZBEKISTAN'ga xush kelibsiz! 🇺🇿\n"
+    "Iltimos, o'zingizga qulay tilni tanlang."
+)
 
 TRANSLATIONS = {
     "ru": {
@@ -11,7 +18,7 @@ TRANSLATIONS = {
         "menu_search": "🔍 Найти недвижимость",
         "menu_ad": "📢 Реклама",
         "menu_referral": "🎁 Скидки -20%",
-        "menu_language": "🌐 Язык",
+        "menu_language": "🇺🇿 O'zbek tili",
         "menu_support": "⚙️ Поддержка",
         "menu_fee": "💰 Тарифы",
         "main_title": "🏠 Главное меню. Выберите нужное действие:",
@@ -20,8 +27,8 @@ TRANSLATIONS = {
         "continue": "▶️ Продолжить",
         "restart": "🔄 Начать заново",
         "skip": "⏭ Пропустить",
-        "language_prompt": "Пожалуйста, выберите язык / Iltimos, tilni tanlang:",
-        "language_saved": "Язык успешно изменен!",
+        "language_prompt": LANGUAGE_PROMPT,
+        "language_saved": "✅ Язык бота изменён на русский.",
         "error_generic": "⚠️ Что-то пошло не так. Попробуйте ещё раз или нажмите /start.",
 
         # --- анкета объявления
@@ -113,6 +120,19 @@ TRANSLATIONS = {
         # --- поиск
         "search_city_prompt": "🔍 Выберите город для поиска недвижимости:",
         "search_deal_prompt": "🔑 Выберите тип сделки:",
+        "search_site_info": (
+            "🏡 Отличный выбор! Все актуальные объявления {deal} в городе {city} собраны "
+            "на нашем сайте RENT UZBEKISTAN.\n\n"
+            "На сайте вы сможете:\n"
+            "🔎 удобно подобрать объект по району, цене, площади и количеству комнат;\n"
+            "📸 посмотреть фотографии и подробное описание;\n"
+            "📞 напрямую связаться с владельцем;\n"
+            "❤️ сохранить понравившиеся варианты в избранное.\n\n"
+            "Нажмите кнопку ниже, чтобы перейти в каталог. Желаем найти именно то, что вы ищете! ✨"
+        ),
+        "search_deal_rent": "об аренде",
+        "search_deal_sale": "о продаже",
+        "site_button": "🏡 Перейти на сайт",
         "search_empty": "По вашему запросу в городе {city} пока ничего не найдено.",
         "search_found": "🔍 Найдено объявлений: {count}. Показываю последние:",
         "search_more_site": "Все объявления с фото и фильтрами — на сайте: {url}",
@@ -180,7 +200,7 @@ TRANSLATIONS = {
         "menu_search": "🔍 Ko'chmas mulk qidirish",
         "menu_ad": "📢 Reklama",
         "menu_referral": "🎁 Chegirmalar -20%",
-        "menu_language": "🌐 Til",
+        "menu_language": "🇷🇺 Русский язык",
         "menu_support": "⚙️ Qo'llab-quvvatlash",
         "menu_fee": "💰 Tariflar",
         "main_title": "🏠 Asosiy menyu. Kerakli amalni tanlang:",
@@ -189,8 +209,8 @@ TRANSLATIONS = {
         "continue": "▶️ Davom etish",
         "restart": "🔄 Qaytadan boshlash",
         "skip": "⏭ O'tkazib yuborish",
-        "language_prompt": "Iltimos, tilni tanlang / Пожалуйста, выберите язык:",
-        "language_saved": "Til muvaffaqiyatli o'zgartirildi!",
+        "language_prompt": LANGUAGE_PROMPT,
+        "language_saved": "✅ Bot tili o'zbek tiliga o'zgartirildi.",
         "error_generic": "⚠️ Nimadir xato ketdi. Qaytadan urinib ko'ring yoki /start ni bosing.",
 
         "city_prompt": "Shaharni tanlang:",
@@ -276,6 +296,19 @@ TRANSLATIONS = {
 
         "search_city_prompt": "🔍 Ko'chmas mulk qidirish uchun shaharni tanlang:",
         "search_deal_prompt": "🔑 Bitim turini tanlang:",
+        "search_site_info": (
+            "🏡 Ajoyib tanlov! {city} shahridagi barcha dolzarb {deal} e'lonlari "
+            "RENT UZBEKISTAN saytimizda jamlangan.\n\n"
+            "Saytda siz:\n"
+            "🔎 obyektni tuman, narx, maydon va xonalar soni bo'yicha qulay tanlashingiz;\n"
+            "📸 rasmlar va batafsil tavsifni ko'rishingiz;\n"
+            "📞 egasi bilan bevosita bog'lanishingiz;\n"
+            "❤️ yoqqan variantlarni sevimlilarga saqlashingiz mumkin.\n\n"
+            "Katalogga o'tish uchun quyidagi tugmani bosing. Aynan izlaganingizni topishingizni tilaymiz! ✨"
+        ),
+        "search_deal_rent": "ijara",
+        "search_deal_sale": "sotuv",
+        "site_button": "🏡 Saytga o'tish",
         "search_empty": "{city} shahrida so'rovingiz bo'yicha hozircha hech narsa topilmadi.",
         "search_found": "🔍 Topilgan e'lonlar: {count}. Oxirgilari:",
         "search_more_site": "Barcha e'lonlar rasm va filtrlar bilan — saytda: {url}",

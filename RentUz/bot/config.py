@@ -31,7 +31,7 @@ OWNER_CHAT_ID = int(_required("OWNER_CHAT_ID"))   # Telegram ID админист
 # --- Необязательные ---
 CRYPTO_PAY_TOKEN = os.getenv("CRYPTO_PAY_TOKEN", "").strip()
 BOT_USERNAME = os.getenv("BOT_USERNAME", "Arenda_UZB_bot").lstrip("@")
-SITE_URL = os.getenv("SITE_URL", "").rstrip("/")  # адрес сайта, для ссылок из бота
+SITE_URL = (os.getenv("SITE_URL") or "https://rentuz-1.onrender.com").strip().rstrip("/")  # адрес сайта
 
 # Webhook: Render сам задаёт RENDER_EXTERNAL_URL для Web Service.
 # Если адреса нет (запуск на ноутбуке) — бот работает через polling.

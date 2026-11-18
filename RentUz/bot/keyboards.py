@@ -51,7 +51,7 @@ def nav_rows(rows: list[list[str]], language: str, *, back: bool = True, home: b
 
 def language_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=value)] for value in LANGUAGES.values()],
+        keyboard=[[KeyboardButton(text=value) for value in LANGUAGES.values()]],
         resize_keyboard=True,
         one_time_keyboard=True,
     )
