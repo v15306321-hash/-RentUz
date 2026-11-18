@@ -128,14 +128,52 @@ else if(l&&!T.closest('a')){sy=scrollY;location.hash='obj-'+l.dataset.i}});
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.dc,.gm')){e.preventDefault();e.target.click()}});
 /* страница объекта */
 const pageHTML=o=>{const ph=o.photos.length?o.photos:[IMG[o.cat]],t=tel(o.phone),done=o.status==='rented',msg=encodeURIComponent(`Здравствуйте! Интересует объект «${o.title}» (${o.city}, ${o.district}).`);
-return`<a class="bk" href="#catalog" onclick="if(sy!=null){history.back();return false}">← Назад к каталогу</a><div class="ob"><div><div class="gm" data-g="${o.id}" data-gi="0" tabindex="0" role="button" aria-label="Открыть галерею: ${o.title}" style="background-image:url('${ph[0]}')"><span class="cn2">${ph.length} фото</span></div><div class="gs">${ph.slice(1).map((s,j)=>`<img class="sl" loading="lazy" data-g="${o.id}" data-gi="${j+1}" src="${s}" alt="${o.title} — фото ${j+2}">`).join('')}</div>
+return`<a class="bk" href="#catalog" onclick="if(sy!=null){history.back();return false}">← Назад к каталогу</a><div class="ob"><div><div class="c3${ph.length>1?'':' one'}" tabindex="0" role="region" aria-roledescription="карусель" aria-label="Фотографии: ${o.title}" data-c3="${o.id}"><div class="c3-stage">${ph.map((s,j)=>`<figure class="c3-it" data-i="${j}"><img src="${s}" alt="${o.title} — фото ${j+1}" draggable="false" ${j>2&&j<ph.length-2?'loading="lazy"':''}></figure>`).join('')}</div>${ph.length>1?'<button type="button" class="c3-nav c3-prev" aria-label="Предыдущее фото">‹</button><button type="button" class="c3-nav c3-next" aria-label="Следующее фото">›</button>':''}<span class="cn2 c3-count">1 / ${ph.length}</span></div>${ph.length>1?`<input type="range" class="c3-bar" min="0" max="${ph.length-1}" step="1" value="0" aria-label="Листать фотографии">`:''}
 <div class="tx"><h3>Описание</h3><p>${o.desc}</p><h3>Преимущества</h3><ul class="pl">${o.features.map(y=>`<li>${y}</li>`).join('')}</ul><h3>Рядом есть</h3><ul class="pl">${NEAR[o.cat].map(y=>`<li>${y}</li>`).join('')}</ul></div></div>
 <aside class="sd"><div class="ch"><em>${cat(o.cat).t}</em><em>${o.term}</em><em class="st-${o.status||'free'}">${stl(o)}</em></div><h2>${o.title}</h2><div class="pc">${fmt(o.price)} <small>сум${o.unit?' / '+o.unit:''}</small></div><div class="sg"><div><b>Город</b>${o.city}</div><div><b>Район</b>${o.district}</div><div><b>Площадь</b>${o.area} м²</div><div><b>Этаж / участок</b>${o.floor}</div>${o.rooms?`<div><b>Комнат</b>${o.rooms}</div>`:''}</div>
 ${done?`<p class="note">Объект уже ${stl(o).toLowerCase()}. Напишите нам — подберём похожий вариант.</p>`:`<div class="own"><small>Контакты владельца</small><b>${o.owner||OWN.n}</b><a href="${t}">${o.phone||OWN.ph}</a></div><a class="btn" href="${t}">Позвонить владельцу</a>`}<a class="btn w" href="${o.tg||TG}?text=${msg}" target="_blank" rel="noopener">Написать в Telegram</a><button type="button" class="btn w${FAV.includes(o.id)?' on':''}" data-f="${o.id}">♥ Избранное</button></aside></div>${done?'':`<a class="fcall" href="${t}">Позвонить владельцу</a>`}`};
 const MD=document.querySelector('meta[name=description]'),D0=MD.content;const OG=document.querySelector('meta[property="og:image"]');if(OG)OG.content=new URL(siteAsset('social_preview'),document.baseURI).href;
 function ld(o){let s=$('#ldo');if(!s){s=document.createElement('script');s.id='ldo';s.type='application/ld+json';document.head.append(s)}s.textContent=o?JSON.stringify({'@context':'https://schema.org','@type':'Product',name:o.title,description:o.desc,image:o.photos[0]||IMG[o.cat],offers:{'@type':'Offer',priceCurrency:'UZS',price:o.price,availability:o.status==='free'?'https://schema.org/InStock':'https://schema.org/SoldOut'}}):''}
+/* ===== 3D-карусель фото на странице объекта: свайп/перетаскивание, стрелки, ползунок, по кругу ===== */
+function initC3(root,id){
+  if(!root)return;
+  const items=[...root.querySelectorAll('.c3-it')],n=items.length,bar=root.parentElement.querySelector('.c3-bar'),count=root.querySelector('.c3-count');
+  let pos=0,drag=null;
+  const wrap=v=>((v%n)+n)%n;
+  const rel=(i,p)=>{let d=i-p;if(n>1){d=((d%n)+n)%n;if(d>n/2)d-=n}return d};
+  const paint=(animate=true)=>{
+    root.classList.toggle('dragging',!animate);
+    items.forEach((el,i)=>{
+      const d=rel(i,pos),a=Math.abs(d),c=Math.min(a,3);
+      el.style.transform=`translateX(${d*58}%) translateZ(${-c*140}px) rotateY(${Math.max(-1,Math.min(1,d))*-38}deg) scale(${1-Math.min(a,2)*.08})`;
+      el.style.zIndex=String(100-Math.round(a*10));
+      el.style.opacity=a>2.4?'0':a>1.4?'.55':'1';
+      el.style.pointerEvents=a>1.5?'none':'auto';
+      el.classList.toggle('on',a<.5);
+    });
+    const cur=wrap(Math.round(pos));
+    if(count)count.textContent=`${cur+1} / ${n}`;
+    if(bar&&!bar.matches(':active'))bar.value=cur;
+  };
+  const go=t=>{pos=Math.round(t);paint();};
+  root.querySelector('.c3-prev')?.addEventListener('click',e=>{e.stopPropagation();go(pos-1)});
+  root.querySelector('.c3-next')?.addEventListener('click',e=>{e.stopPropagation();go(pos+1)});
+  bar?.addEventListener('input',()=>{const target=+bar.value,cur=wrap(Math.round(pos));pos=Math.round(pos)+rel(target,cur);paint()});
+  root.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){e.preventDefault();go(pos-1)}else if(e.key==='ArrowRight'){e.preventDefault();go(pos+1)}else if(e.key==='Enter')openGal(id,wrap(Math.round(pos)))});
+  const stage=root.querySelector('.c3-stage');
+  stage.addEventListener('pointerdown',e=>{if(e.button>0)return;drag={x:e.clientX,p:pos,moved:false,id:e.pointerId}});
+  stage.addEventListener('pointermove',e=>{if(!drag||n<2)return;const dx=e.clientX-drag.x;if(Math.abs(dx)>6&&!drag.moved){drag.moved=true;stage.setPointerCapture?.(drag.id)}
+    if(drag.moved){const w=stage.clientWidth*.58||1;pos=drag.p-dx/w;paint(false)}});
+  const end=e=>{if(!drag)return;const d=drag;drag=null;
+    if(d.moved){const v=pos-d.p;go(Math.abs(v)<.2&&Math.abs(v)>.02?d.p+Math.sign(v):pos);return}
+    paint();const it=e.target.closest&&e.target.closest('.c3-it');if(!it)return;const i=+it.dataset.i,d2=rel(i,pos);
+    if(Math.abs(d2)<.5)openGal(id,i);else go(pos+d2)};
+  stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',()=>{if(drag){drag=null;go(pos)}});
+  stage.addEventListener('dragstart',e=>e.preventDefault());
+  paint();
+}
 function route(){const m=/^#obj-(\d+)$/.exec(location.hash),o=m&&A.find(x=>x.id===+m[1]),b=document.body;
-if(o){$('#obj').innerHTML=pageHTML(o);bind($('#obj'));b.classList.add('pg');scrollTo({top:0,behavior:'instant'});document.title=`${o.title}, ${o.district}, ${o.city} — ${fmt(o.price)} сум`;MD.content=o.desc;ld(o)}
+if(o){$('#obj').innerHTML=pageHTML(o);initC3($('#obj .c3'),o.id);bind($('#obj'));b.classList.add('pg');scrollTo({top:0,behavior:'instant'});document.title=`${o.title}, ${o.district}, ${o.city} — ${fmt(o.price)} сум`;MD.content=o.desc;ld(o)}
 else if(b.classList.contains('pg')){b.classList.remove('pg');document.title=T0;MD.content=D0;ld();sy!=null?scrollTo({top:sy,behavior:'instant'}):$('#catalog').scrollIntoView()}}
 function setCity(c){city=c;try{localStorage.setItem('city',c)}catch(_){}
 const configured=HERO[c]||[];const h=configured.some(Boolean)?configured:null;
