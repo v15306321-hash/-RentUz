@@ -164,18 +164,39 @@ const nav=$$('#lk a:not(.btn)');
 const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)nav.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}),{rootMargin:'-40% 0px -55% 0px'});
 ['directions','catalog','owner','contacts'].forEach(id=>so.observe(document.getElementById(id)));
 $('#yr').textContent=new Date().getFullYear();
+/* ===== Объявления и реклама из Telegram-бота (API на Render) ===== */
+const escHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const httpsUrl=u=>/^https:\/\//.test(String(u||''))?String(u):'';
+const fromBot=o=>({...o,id:+o.id,source:'telegram_bot',title:escHTML(o.title),city:escHTML(o.city),district:escHTML(o.district),desc:escHTML(o.desc),
+  owner:escHTML(o.owner),phone:escHTML(o.phone),floor:escHTML(o.floor),term:escHTML(o.term),unit:escHTML(o.unit),features:(o.features||[]).map(escHTML),
+  photos:(o.photos||[]).map(httpsUrl).filter(Boolean),tg:httpsUrl(o.tg),status:o.status==='rented'?'rented':'free',area:+o.area||0,rooms:+o.rooms||0,price:+o.price||0});
+/* Бесплатный Render «засыпает»: первый ответ может идти до минуты — ждём до 70 секунд. */
+async function apiGet(path){
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),70000);
+  try{const r=await fetch(`${API_BASE}${path}`,{cache:'no-store',signal:ctrl.signal});if(!r.ok)throw new Error(`API HTTP ${r.status}`);return await r.json()}
+  finally{clearTimeout(timer)}
+}
 async function loadBotListings(){
   if(!API_ENABLED)return;
   try{
-    const response=await fetch(`${API_BASE}/api/listings`,{cache:'no-store'});
-    if(!response.ok)throw new Error(`API HTTP ${response.status}`);
-    const payload=await response.json();
-    const remote=Array.isArray(payload.items)?payload.items:[];
-    A=[...A.filter(item=>item.source!=='telegram_bot'),...remote];
-    fillDist();drawDirs();draw();
+    const payload=await apiGet('/api/listings');
+    const remote=(Array.isArray(payload)?payload:Array.isArray(payload.items)?payload.items:[]).map(fromBot);
+    A=[...remote,...A.filter(item=>item.source!=='telegram_bot'&&item.source!=='bot')];
+    const d=F.dist;fillDist();if(d){F.dist=d;$('#flt [name=dist]').value=d}
+    drawDirs();draw();route();
   }catch(error){console.warn('RENT UZBEKISTAN API is unavailable; the static catalogue remains active.',error)}
+}
+async function loadBotAds(){
+  if(!API_ENABLED)return;
+  try{
+    const ads=(await apiGet('/api/ads')).filter(ad=>httpsUrl(ad.image));
+    if(!ads.length)return;
+    let i=0;
+    const show=()=>{const ad=ads[i++%ads.length];SITE_ASSETS.ad_image=httpsUrl(ad.image);SITE_ASSETS.ad_link=httpsUrl(ad.link)||OWNER_BOT+'?start=ad';applyAdBanner()};
+    show();if(ads.length>1)setInterval(show,8000);
+  }catch(error){console.warn('Ads API is unavailable.',error)}
 }
 
 let sv=null;try{sv=localStorage.getItem('city')}catch(_){}
 setCity(CT[sv]?sv:'Алмалык');route();
-loadBotListings();
+loadBotListings();loadBotAds();
