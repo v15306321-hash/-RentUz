@@ -15,7 +15,7 @@ from aiohttp import web
 from config import BOT_TOKEN, PORT, WEBHOOK_BASE_URL, WEBHOOK_SECRET
 from database.db import close_db, init_db
 from database.fsm_storage import PostgresStorage
-from handlers import advertising, fallback, payment, start
+from handlers import advertising, fallback, my_listings, payment, start
 from localization import tr
 from web.server import build_app
 
@@ -28,6 +28,7 @@ def create_dispatcher() -> Dispatcher:
     dp.include_router(start.router)
     dp.include_router(payment.router)
     dp.include_router(advertising.router)
+    dp.include_router(my_listings.router)
     dp.include_router(fallback.router)  # всегда последним
 
     @dp.errors()

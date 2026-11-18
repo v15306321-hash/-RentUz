@@ -64,7 +64,7 @@ def to_site_listing(order: dict, base_url: str) -> dict:
         "price": int(order.get("price_uzs") or 0),
         "unit": "" if is_sale else "мес",
         "term": "Продажа" if is_sale else "На месяц",
-        "status": "free",
+        "status": "rented" if order.get("status") == "rented" else "free",
         "desc": order.get("description") or f"{_title(order)}, {_number(order.get('area'))} м². Подробности уточняйте у владельца.",
         "features": [],
         "photos": [f"{base_url}/api/photo/{pid}" for pid in (order.get("photo_ids") or [])],
@@ -144,7 +144,7 @@ def build_app(bot: Bot, dp: Dispatcher, *, public_url: str, webhook_secret: str 
         except ValueError:
             raise web.HTTPNotFound()
         row = await db.get_photo(photo_id)
-        if not row or row["order_status"] != "published":
+        if not row or row["order_status"] not in ("published", "rented"):
             raise web.HTTPNotFound()
         return await _telegram_file(row["file_id"])
 

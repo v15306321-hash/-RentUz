@@ -91,7 +91,8 @@ dialog::backdrop{background:rgba(8,18,32,.7)}
 <script src="../data/site-assets.js"></script>
 <script>
 'use strict';
-const PASS='adrfka2008',K='arenda_listings_v1',ASSET_KEY='rent_site_assets_v1',MAX_PHOTOS=12,MAX_LISTINGS_CHARS=2200000;
+/* Пароль хранится только в виде хэша PBKDF2 (310 000 итераций) — в коде его не прочитать. */
+const PW_SALT='7c6b420bc3a2c2400d73fc14c82a4e87',PW_HASH='7745f743331314f9e87fb176cffeb31bd234cc8d05fd9456ca79af284b52ed48',PW_ITER=310000,K='arenda_listings_v1',ASSET_KEY='rent_site_assets_v1',MAX_PHOTOS=12,MAX_LISTINGS_CHARS=2200000;
 const $=s=>document.querySelector(s);
 const CITIES=['Алмалык','Ташкент','Самарканд','Андижан','Наманган','Нукус','Фергана','Карши','Бухара','Коканд'];
 const CATS={flat:'Квартиры',house:'Дома и дачи',office:'Офисы',shop:'Магазины и склады'};
@@ -272,8 +273,14 @@ $('#im').onchange=e=>{
 };
 $('#rs').onclick=()=>{if(confirm('Вернуть данные из data/listings.js?')){localStorage.removeItem(K);location.reload()}};
 const start=()=>{$('#lg').hidden=true;$('#ap').hidden=false;list()};
-$('#lf').onsubmit=e=>{e.preventDefault();if($('#pw').value===PASS){sessionStorage.setItem('ok','1');start()}else alert('Неверный пароль')};
-if(sessionStorage.getItem('ok'))start();
+const pwHash=async pw=>{const hex=h=>new Uint8Array(h.match(/../g).map(x=>parseInt(x,16)));const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:hex(PW_SALT),iterations:PW_ITER},key,256);return[...new Uint8Array(bits)].map(b=>b.toString(16).padStart(2,'0')).join('')};
+let pwFails=0;
+$('#lf').onsubmit=async e=>{e.preventDefault();const btn=e.submitter;if(btn)btn.disabled=true;
+  try{if(await pwHash($('#pw').value)===PW_HASH){pwFails=0;sessionStorage.setItem('ok',PW_HASH);start()}
+    else{pwFails++;await new Promise(r=>setTimeout(r,Math.min(30000,1000*2**pwFails)));alert('Неверный пароль')}}
+  finally{if(btn)btn.disabled=false}};
+if(sessionStorage.getItem('ok')===PW_HASH)start();
 </script>
 </body>
 </html>

@@ -88,6 +88,7 @@ const NEAR={flat:['Школа','Детский сад','Больница','Ма�
 const SLOTS={flat:['Гостиная','Спальня','Кухня','Санузел','Балкон','Вид из окна'],house:['Гостиная','Спальня','Кухня','Санузел','Двор','Терраса'],office:['Рабочая зона','Переговорная','Кухня','Санузел','Вход','Парковка'],shop:['Торговый зал','Витрина','Подсобка','Санузел','Вход','Парковка']};
 /* ===== v2: данные, поиск, избранное, статусы, галерея ===== */
 const ST={free:'Свободно',rented:'Занято'},stl=o=>ST[o.status]||ST.free;
+/* Объявления: data/listings.js + Telegram-бот (API). Черновики из админки видны только в браузере администратора. */
 const LS='arenda_listings_v1';let A=null;try{A=JSON.parse(localStorage.getItem(LS))}catch(_){}
 if(!Array.isArray(A))A=window.LISTINGS||[];
 /* Normalize legacy/unknown statuses: only free and rented are supported. */
@@ -105,7 +106,7 @@ const card=o=>{const f=FAV.includes(o.id),s=o.status||'free';return`<article cla
 function draw(){$('#dtabs').innerHTML=DL.map(d=>`<button data-d="${d}" class="${d===dl?'on':''}">${d}</button>`).join('');$('#tabs').innerHTML=[['all','Все'],...CAT.map(c=>[c.k,c.t])].map(([k,t])=>`<button data-k="${k}" class="${k===cur?'on':''}">${t}</button>`).join('');
 const r=rows(),s=F.sort;if(s)r.sort((a,b)=>s==='p'?a.price-b.price:s==='d'?b.price-a.price:b.area-a.area);
 $('#fn').textContent=FAV.length;$('#fv').classList.toggle('on',F.fav);$('#fc').textContent='Найдено: '+r.length;
-$('#gal').innerHTML=r.map(card).join('')||'<p class="note">По этим фильтрам объектов нет. Измените условия или напишите нам — подберём вариант.</p>'}
+$('#gal').innerHTML=r.map(card).join('')||(A.some(o=>o.city===city)?'<p class="note">По этим фильтрам объектов нет. Измените условия или напишите нам — подберём вариант.</p>':`<div class="empty"><b>${city}: объявлений пока нет</b><p>Каталог только запускается — первые объекты появятся совсем скоро. Сдаёте или продаёте недвижимость? Разместите объявление через нашего бота, и его первыми увидят клиенты.</p><a class="btn" href="${OWNER_BOT}?start=list" target="_blank" rel="noopener">Разместить объявление</a></div>`)}
 const sel=k=>{cur=k;draw()};
 const fillDist=()=>{const available=[...new Set([...CT[city].d,...A.filter(x=>x.city===city).map(x=>x.district).filter(Boolean)])];$('#flt [name=dist]').innerHTML='<option value="">Все районы</option>'+available.map(x=>`<option>${x}</option>`).join('');F.dist=''};
 $('#flt').oninput=e=>{if(e.target.name){F[e.target.name]=e.target.value;draw()}};
@@ -129,7 +130,7 @@ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.tar
 /* страница объекта */
 const pageHTML=o=>{const ph=o.photos.length?o.photos:[IMG[o.cat]],t=tel(o.phone),done=o.status==='rented',msg=encodeURIComponent(`Здравствуйте! Интересует объект «${o.title}» (${o.city}, ${o.district}).`);
 return`<a class="bk" href="#catalog" onclick="if(sy!=null){history.back();return false}">← Назад к каталогу</a><div class="ob"><div><div class="c3${ph.length>1?'':' one'}" tabindex="0" role="region" aria-roledescription="карусель" aria-label="Фотографии: ${o.title}" data-c3="${o.id}"><div class="c3-stage">${ph.map((s,j)=>`<figure class="c3-it" data-i="${j}"><img src="${s}" alt="${o.title} — фото ${j+1}" draggable="false" ${j>2&&j<ph.length-2?'loading="lazy"':''}></figure>`).join('')}</div>${ph.length>1?'<button type="button" class="c3-nav c3-prev" aria-label="Предыдущее фото">‹</button><button type="button" class="c3-nav c3-next" aria-label="Следующее фото">›</button>':''}<span class="cn2 c3-count">1 / ${ph.length}</span></div>${ph.length>1?`<input type="range" class="c3-bar" min="0" max="${ph.length-1}" step="1" value="0" aria-label="Листать фотографии">`:''}
-<div class="tx"><h3>Описание</h3><p>${o.desc}</p><h3>Преимущества</h3><ul class="pl">${o.features.map(y=>`<li>${y}</li>`).join('')}</ul><h3>Рядом есть</h3><ul class="pl">${NEAR[o.cat].map(y=>`<li>${y}</li>`).join('')}</ul></div></div>
+<div class="tx"><h3>Описание</h3><p>${o.desc}</p>${o.features&&o.features.length?`<h3>Преимущества</h3><ul class="pl">${o.features.map(y=>`<li>${y}</li>`).join('')}</ul>`:''}<h3>Рядом есть</h3><ul class="pl">${NEAR[o.cat].map(y=>`<li>${y}</li>`).join('')}</ul>${locHTML(o)}</div></div>
 <aside class="sd"><div class="ch"><em>${cat(o.cat).t}</em><em>${o.term}</em><em class="st-${o.status||'free'}">${stl(o)}</em></div><h2>${o.title}</h2><div class="pc">${fmt(o.price)} <small>сум${o.unit?' / '+o.unit:''}</small></div><div class="sg"><div><b>Город</b>${o.city}</div><div><b>Район</b>${o.district}</div><div><b>Площадь</b>${o.area} м²</div><div><b>Этаж / участок</b>${o.floor}</div>${o.rooms?`<div><b>Комнат</b>${o.rooms}</div>`:''}</div>
 ${done?`<p class="note">Объект уже ${stl(o).toLowerCase()}. Напишите нам — подберём похожий вариант.</p>`:`<div class="own"><small>Контакты владельца</small><b>${o.owner||OWN.n}</b><a href="${t}">${o.phone||OWN.ph}</a></div><a class="btn" href="${t}">Позвонить владельцу</a>`}<a class="btn w" href="${o.tg||TG}?text=${msg}" target="_blank" rel="noopener">Написать в Telegram</a><button type="button" class="btn w${FAV.includes(o.id)?' on':''}" data-f="${o.id}">♥ Избранное</button></aside></div>${done?'':`<a class="fcall" href="${t}">Позвонить владельцу</a>`}`};
 const MD=document.querySelector('meta[name=description]'),D0=MD.content;const OG=document.querySelector('meta[property="og:image"]');if(OG)OG.content=new URL(siteAsset('social_preview'),document.baseURI).href;
@@ -172,8 +173,28 @@ function initC3(root,id){
   stage.addEventListener('dragstart',e=>e.preventDefault());
   paint();
 }
+/* ===== Приблизительное местоположение объекта (без точного адреса) ===== */
+const GEO={'Алмалык':[40.8447,69.5983,'Ташкентская область'],'Ташкент':[41.3111,69.2797,'город Ташкент'],'Самарканд':[39.6542,66.9597,'Самаркандская область'],
+'Андижан':[40.7821,72.3442,'Андижанская область'],'Наманган':[40.9983,71.6726,'Наманганская область'],'Нукус':[42.4600,59.6100,'Республика Каракалпакстан'],
+'Фергана':[40.3864,71.7864,'Ферганская область'],'Карши':[38.8606,65.7891,'Кашкадарьинская область'],'Бухара':[39.7747,64.4286,'Бухарская область'],'Коканд':[40.5286,70.9425,'Ферганская область']};
+const PIN='<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+function locHTML(o){const g=GEO[o.city];if(!g)return'';const place=o.district&&o.district!==o.city?`${o.district}, ${o.city}`:o.city;
+  return`<div class="loc" data-lat="${g[0]}" data-lon="${g[1]}"><div class="loc-tx"><i>${PIN}</i><div><b>${place}</b><span>${g[2]}</span><em class="loc-dist"><button type="button" class="loc-me">📍 Узнать расстояние от меня</button></em><small>Местоположение приблизительное. Точный адрес сообщит владелец.</small></div></div>
+  <a class="loc-map" href="https://yandex.uz/maps/?ll=${g[1]},${g[0]}&z=13&pt=${g[1]},${g[0]}" target="_blank" rel="noopener" aria-label="Открыть на карте"><span class="loc-ring"></span></a></div>`}
+function loadLeaflet(){if(window.L)return Promise.resolve();if(loadLeaflet.p)return loadLeaflet.p;
+  const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.append(css);
+  return loadLeaflet.p=new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';sc.onload=ok;sc.onerror=no;document.head.append(sc)})}
+function km(a,b,c,d){const r=x=>x*Math.PI/180,R=6371,dl=r(c-a),dn=r(d-b),h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return Math.round(2*R*Math.asin(Math.sqrt(h)))}
+function initLoc(box){if(!box)return;const lat=+box.dataset.lat,lon=+box.dataset.lon,map=box.querySelector('.loc-map'),dist=box.querySelector('.loc-dist');
+  loadLeaflet().then(()=>{const m=L.map(map,{center:[lat,lon],zoom:13,zoomControl:false,attributionControl:true,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false});
+    m.attributionControl.setPrefix(false);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(m);
+    L.circle([lat,lon],{radius:450,color:'#3b6cf6',weight:8,fillColor:'#7d9cf8',fillOpacity:.45}).addTo(m);map.classList.add('ready')}).catch(()=>{});
+  const showDist=()=>navigator.geolocation.getCurrentPosition(p=>{const k=km(p.coords.latitude,p.coords.longitude,lat,lon);dist.textContent=k<1?'Совсем рядом с вами':`В ${k.toLocaleString('ru-RU')} км от вас`},()=>{dist.textContent='Не удалось определить ваше местоположение'},{maximumAge:600000,timeout:10000});
+  if(!navigator.geolocation){dist.remove();return}
+  dist.querySelector('.loc-me').onclick=e=>{e.stopPropagation();dist.textContent='Определяем…';showDist()};
+  navigator.permissions?.query({name:'geolocation'}).then(r=>{if(r.state==='granted')showDist()}).catch(()=>{})}
 function route(){const m=/^#obj-(\d+)$/.exec(location.hash),o=m&&A.find(x=>x.id===+m[1]),b=document.body;
-if(o){$('#obj').innerHTML=pageHTML(o);initC3($('#obj .c3'),o.id);bind($('#obj'));b.classList.add('pg');scrollTo({top:0,behavior:'instant'});document.title=`${o.title}, ${o.district}, ${o.city} — ${fmt(o.price)} сум`;MD.content=o.desc;ld(o)}
+if(o){$('#obj').innerHTML=pageHTML(o);initC3($('#obj .c3'),o.id);initLoc($('#obj .loc'));bind($('#obj'));b.classList.add('pg');scrollTo({top:0,behavior:'instant'});document.title=`${o.title}, ${o.district}, ${o.city} — ${fmt(o.price)} сум`;MD.content=o.desc;ld(o)}
 else if(b.classList.contains('pg')){b.classList.remove('pg');document.title=T0;MD.content=D0;ld();sy!=null?scrollTo({top:sy,behavior:'instant'}):$('#catalog').scrollIntoView()}}
 function setCity(c){city=c;try{localStorage.setItem('city',c)}catch(_){}
 const configured=HERO[c]||[];const h=configured.some(Boolean)?configured:null;

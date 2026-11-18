@@ -117,6 +117,11 @@ CREATE TABLE IF NOT EXISTS referrals (
 );
 CREATE INDEX IF NOT EXISTS referrals_referrer ON referrals(referrer_id);
 
+-- Добавлено позже: «Мои объявления» и автопостинг в каналы (безопасно для существующей базы)
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS rented_at TIMESTAMPTZ;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS channel_chat TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS channel_message_id BIGINT;
+
 CREATE TABLE IF NOT EXISTS fsm_storage (
     key        TEXT PRIMARY KEY,
     state      TEXT,
@@ -131,7 +136,10 @@ ORDER_COLUMNS = {
     "price_uzs", "price_usd", "exchange_rate", "commission_rate", "base_fee", "discount_percent",
     "service_fee", "phone", "contact_name", "contact_username", "payment_method", "payment_status",
     "receipt_file_id", "crypto_invoice_id", "crypto_invoice_url", "published_at",
+    "rented_at", "channel_chat", "channel_message_id",
 }
+
+RENTED_VISIBLE_DAYS = 7  # сколько дней «Занято» висит на сайте
 AD_COLUMNS = {
     "username", "full_name", "language", "duration_days", "amount_uzs", "banner_file_id", "caption",
     "link", "status", "payment_method", "payment_status", "receipt_file_id", "crypto_invoice_id",
@@ -327,6 +335,15 @@ async def get_photo(photo_id: int) -> dict | None:
     ))
 
 
+async def user_orders(user_id: int, limit: int = 10) -> list[dict]:
+    rows = await pool().fetch(
+        "SELECT * FROM orders WHERE user_id = $1 AND status NOT IN ('abandoned') "
+        "AND NOT (status = 'draft' AND draft_step IS NULL) ORDER BY id DESC LIMIT $2",
+        user_id, limit,
+    )
+    return [dict(r) for r in rows]
+
+
 async def search_published(city_key: str | None = None, purpose: str | None = None, limit: int = 5) -> tuple[int, list[dict]]:
     where = ["status = 'published'"]
     args: list = []
@@ -350,8 +367,10 @@ async def published_listings_with_photos() -> list[dict]:
         SELECT o.*, COALESCE(array_agg(p.id ORDER BY p.id) FILTER (WHERE p.id IS NOT NULL), '{}') AS photo_ids
         FROM orders o LEFT JOIN order_photos p ON p.order_id = o.id
         WHERE o.status = 'published'
-        GROUP BY o.id ORDER BY o.published_at DESC NULLS LAST
-        """
+           OR (o.status = 'rented' AND o.rented_at > now() - make_interval(days => $1))
+        GROUP BY o.id ORDER BY (o.status = 'published') DESC, o.published_at DESC NULLS LAST
+        """,
+        RENTED_VISIBLE_DAYS,
     )
     return [dict(r) for r in rows]
 

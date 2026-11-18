@@ -485,6 +485,14 @@ async def menu_language(message: Message, state: FSMContext):
     await message.answer(tr(language, "language_saved"), reply_markup=main_menu_keyboard(language))
 
 
+@router.message(F.text.in_(all_variants("menu_my")))
+async def menu_my(message: Message, state: FSMContext):
+    language = await _language(message, state)
+    await _show_main_silent(state, language)
+    from handlers.my_listings import show_my_listings
+    await show_my_listings(message, language)
+
+
 @router.message(F.text.in_(all_variants("menu_fee")))
 async def menu_fee(message: Message, state: FSMContext):
     language = await _language(message, state)

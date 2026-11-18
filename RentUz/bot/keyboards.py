@@ -64,9 +64,9 @@ def main_menu_keyboard(language: str) -> ReplyKeyboardMarkup:
             # visual treatment on Telegram clients as the other menu buttons.
             [KeyboardButton(text=tr(language, "menu_list"))],
             [KeyboardButton(text=tr(language, "menu_search"))],
-            [KeyboardButton(text=tr(language, "menu_ad")), KeyboardButton(text=tr(language, "menu_referral"))],
-            [KeyboardButton(text=tr(language, "menu_support")), KeyboardButton(text=tr(language, "menu_fee"))],
-            [KeyboardButton(text=tr(language, "menu_language"))],
+            [KeyboardButton(text=tr(language, "menu_my")), KeyboardButton(text=tr(language, "menu_referral"))],
+            [KeyboardButton(text=tr(language, "menu_ad")), KeyboardButton(text=tr(language, "menu_fee"))],
+            [KeyboardButton(text=tr(language, "menu_support")), KeyboardButton(text=tr(language, "menu_language"))],
         ],
         resize_keyboard=True,
         is_persistent=False,

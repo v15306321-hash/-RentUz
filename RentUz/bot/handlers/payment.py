@@ -27,6 +27,7 @@ from database.db import (
 )
 from keyboards import main_menu_keyboard, money, nav_rows, payment_keyboard
 from localization import normalize_language, tr
+from services.channels import check_channels, mark_inactive, post_listing
 from services.crypto_pay import create_crypto_invoice, get_crypto_invoice_status
 from services.pricing import MAX_DISCOUNT_FRIENDS, apply_discount, discount_percent, service_fee_usdt
 from .states import PaymentForm
@@ -282,6 +283,8 @@ async def _publish(bot, order: dict) -> None:
     except Exception:
         log.warning("Could not notify user %s about publication", order["user_id"])
 
+    await post_listing(bot, order)
+
     referrer_id = await qualify_referral(order["user_id"], order["id"])
     if referrer_id:
         stats = await referral_stats(referrer_id)
@@ -363,6 +366,7 @@ async def decline_order(callback: CallbackQuery):
 async def _unpublish(bot, order_id: int) -> dict | None:
     order = await transition_order(order_id, ("published",), "unpublished")
     if order:
+        await mark_inactive(bot, order)
         language = normalize_language(order.get("language"))
         try:
             await bot.send_message(order["user_id"], tr(language, "listing_unpublished", number=order["order_number"]))
@@ -398,3 +402,12 @@ async def unpublish_command(message: Message, command: CommandObject):
         await message.answer(f"🗑 {order['order_number']} снято с сайта.")
     else:
         await message.answer(f"{order['order_number']} сейчас не опубликовано (статус: {order['status']}).")
+
+
+@router.message(Command("channels"))
+async def channels_command(message: Message):
+    """/channels — проверить, может ли бот публиковать в городские каналы."""
+    if not _is_owner(message):
+        return
+    report = await check_channels(message.bot)
+    await message.answer("📡 Каналы для автопостинга:\n\n" + "\n".join(report))
