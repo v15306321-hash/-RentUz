@@ -1,4 +1,4 @@
-const TG='https://t.me/Resell_Tashkent'; /* Telegram для связи и подбора объектов */
+const TG='https://t.me/Arenda_UZB_bot'; /* Связь с сайтом — только через бота (там есть техподдержка) */
 const OWNER_BOT='https://t.me/Arenda_UZB_bot'; /* Бот для автоматического добавления недвижимости */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const bind=r=>r.querySelectorAll('[data-tg]').forEach(a=>{a.href=TG;a.target='_blank';a.rel='noopener'});bind(document);
@@ -41,8 +41,9 @@ function applyAdBanner(){
     placeholder.hidden=false;
     banner.classList.remove('has-image');
   }
-  let href=TG;
-  const configured=String(SITE_ASSETS.ad_link||'').trim();
+  /* Пустой блок «Здесь могла быть ваша реклама» ведёт в бота, в раздел рекламы */
+  let href=OWNER_BOT+'?start=ad';
+  const configured=source?String(SITE_ASSETS.ad_link||'').trim():'';
   if(configured){
     try{
       const parsed=new URL(configured,document.baseURI);
@@ -86,7 +87,7 @@ const CT={'Алмалык':{p:'в Алмалыке',f:1,d:['Радуга','Ой�
 'Бухара':{p:'в Бухаре',f:1,d:['Сайфиддин Бохарзий','Кўкалдош','Жўйбор','Дилкушо','Шергирон','Чорбоқхосса','Шайхул Олам','Турки Жанди','Гулчорбоғ','Ҳавзинав','Ширбудин','Отбозор']},
 'Коканд':{p:'в Коканде',f:1,d:['Гиштли Масжид','Вакф Чорсу','Тугонбоши','Янги Чорсу','Каландархона','Ёр Бозори','Чархини Куприги','Исфара Гузари','Каймокли Гузар','Мисгарлик','Дегрезлик','Нонвойлик Гузари','Шайхон','Гишткуприк','Галчасой','Темирйули','Чорчинор','Исломабад','Кушчинор','Алишер Навои','Ок Олтин','Нурафшон','Навбахор','Истиклол','Навруз','Дустлик','Бунёдкор','Олтин Водий','Мукимий']}};
 /* ↓ Контакты владельца по умолчанию; для отдельного объекта можно добавить 13-й элемент {n:'Имя',ph:'+998…',tg:'https://t.me/…'} */
-const OWN={n:'Владелец объекта',ph:'+998 90 000 00 00'};
+const OWN={n:'Владелец объекта',ph:''};
 const NEAR={flat:['Школа','Детский сад','Больница','Магазин','Рынок'],house:['Школа','Детский сад','Больница','Магазин','Рынок'],office:['Банки и кафе','Остановка транспорта','Парковка','Магазины','Бизнес-центры'],shop:['Высокая проходимость','Остановка транспорта','Парковка','Рынок','Банк рядом']};
 if(window.LANG==='uz')Object.assign(NEAR,I18N_NEAR_UZ);
 const SLOTS={flat:['Гостиная','Спальня','Кухня','Санузел','Балкон','Вид из окна'],house:['Гостиная','Спальня','Кухня','Санузел','Двор','Терраса'],office:['Рабочая зона','Переговорная','Кухня','Санузел','Вход','Парковка'],shop:['Торговый зал','Витрина','Подсобка','Санузел','Вход','Парковка']};
@@ -100,7 +101,7 @@ let statusMigration=false;A=A.map(o=>{const status=o.status==='rented'?'rented':
 if(statusMigration){try{localStorage.setItem(LS,JSON.stringify(A))}catch(_){}}
 let FAV=[];try{FAV=JSON.parse(localStorage.getItem('fav'))||[]}catch(_){}
 const saveFav=()=>{try{localStorage.setItem('fav',JSON.stringify(FAV))}catch(_){}};
-const fmt=n=>Number(n||0).toLocaleString('ru-RU'),cat=k=>CAT.find(c=>c.k===k),tel=p=>'tel:'+(p||OWN.ph).replace(/[^+\d]/g,'');
+const fmt=n=>Number(n||0).toLocaleString('ru-RU'),cat=k=>CAT.find(c=>c.k===k),tel=p=>p?'tel:'+String(p).replace(/[^+\d]/g,''):'';
 /* Перевод полей объявления для показа: тип сделки, единица цены, этаж, название объявлений из бота */
 const TERM_KEY={'Посуточно':'term_daily','На месяц':'term_month','Продажа':'term_sale'},UNIT_KEY={'мес':'unit_month','сутки':'unit_day'};
 const termOf=o=>TERM_KEY[o.term]?t(TERM_KEY[o.term]):o.term;
@@ -115,7 +116,7 @@ let city='Алмалык',cur='all',dl='',sy=null,F=F0();
 const drawDirs=()=>{$('#dirs').innerHTML=CAT.map(c=>{const n=A.filter(x=>x.cat===c.k&&x.city===city).length;return`<div class="dc" data-go="${c.k}" tabindex="0" role="button" style="--im:url(${IMG[c.k]})"><h3>${c.t}</h3><p>${c.d}</p><ul>${c.s.map(x=>`<li>${x}</li>`).join('')}</ul><span>${t('view_objects',{n})}</span></div>`}).join('')};
 const DL=['Посуточно','На месяц','Приобрести'],DLK={'Посуточно':'tab_daily','На месяц':'tab_month','Приобрести':'tab_sale'},DM={'Посуточно':'Посуточно','На месяц':'На месяц','Приобрести':'Продажа'};
 const rows=()=>{const q=F.q.trim().toLowerCase();return A.filter(o=>o.city===city&&(cur==='all'||o.cat===cur)&&(!dl||o.term===DM[dl])&&(!F.dist||o.district===F.dist)&&(!F.pmin||o.price>=+F.pmin)&&(!F.pmax||o.price<=+F.pmax)&&(!F.amin||o.area>=+F.amin)&&(!F.amax||o.area<=+F.amax)&&(!F.rooms||(F.rooms==='4'?o.rooms>=4:o.rooms===+F.rooms))&&(!F.st||o.status===F.st)&&(!F.fav||FAV.includes(o.id))&&(!q||`${o.title} ${titleOf(o)} ${o.district} ${o.desc}`.toLowerCase().includes(q)))};
-const card=o=>{const f=FAV.includes(o.id),s=o.status||'free';return`<article class="lc s-${s}" data-i="${o.id}"><div class="pw"><button type="button" class="ph" data-g="${o.id}" aria-label="${t('see_photos',{t:titleOf(o)})}" style="background-image:url('${o.photos[0]||IMG[o.cat]}')"></button><span class="bd st-${s}">${stl(o)}</span><span class="cn2">${t('photos_n',{n:o.photos.length||1})}</span><button type="button" class="hr${f?' on':''}" data-f="${o.id}" aria-label="${t('add_fav',{t:titleOf(o)})}">♥</button></div><div class="cb"><div class="ch"><em>${cat(o.cat).t}</em><em>${termOf(o)}</em></div><h3>${titleOf(o)}</h3><div class="dd">${o.district}</div><div class="pc">${fmt(o.price)} <small>${priceUnit(o)}</small></div><div class="sp"><span>${o.area} ${t('m2')}</span><span>${o.rooms?t('rooms_n',{n:o.rooms}):floorOf(o)}</span></div>${s==='rented'?'':`<a class="cl2" href="${tel(o.phone)}">${t('call')}</a>`}</div></article>`};
+const card=o=>{const f=FAV.includes(o.id),s=o.status||'free';return`<article class="lc s-${s}" data-i="${o.id}"><div class="pw"><button type="button" class="ph" data-g="${o.id}" aria-label="${t('see_photos',{t:titleOf(o)})}" style="background-image:url('${o.photos[0]||IMG[o.cat]}')"></button><span class="bd st-${s}">${stl(o)}</span><span class="cn2">${t('photos_n',{n:o.photos.length||1})}</span><button type="button" class="hr${f?' on':''}" data-f="${o.id}" aria-label="${t('add_fav',{t:titleOf(o)})}">♥</button></div><div class="cb"><div class="ch"><em>${cat(o.cat).t}</em><em>${termOf(o)}</em></div><h3>${titleOf(o)}</h3><div class="dd">${o.district}</div><div class="pc">${fmt(o.price)} <small>${priceUnit(o)}</small></div><div class="sp"><span>${o.area} ${t('m2')}</span><span>${o.rooms?t('rooms_n',{n:o.rooms}):floorOf(o)}</span></div>${s==='rented'||!o.phone?'':`<a class="cl2" href="${tel(o.phone)}">${t('call')}</a>`}</div></article>`};
 function draw(){$('#dtabs').innerHTML=DL.map(d=>`<button data-d="${d}" class="${d===dl?'on':''}">${t(DLK[d])}</button>`).join('');$('#tabs').innerHTML=[['all',t('all')],...CAT.map(c=>[c.k,c.t])].map(([k,t])=>`<button data-k="${k}" class="${k===cur?'on':''}">${t}</button>`).join('');
 const r=rows(),s=F.sort;if(s)r.sort((a,b)=>s==='p'?a.price-b.price:s==='d'?b.price-a.price:b.area-a.area);
 $('#fn').textContent=FAV.length;$('#fv').classList.toggle('on',F.fav);$('#fc').textContent=t('found',{n:r.length});updFltCount();
@@ -154,7 +155,7 @@ const pageHTML=o=>{const ph=o.photos.length?o.photos:[IMG[o.cat]],t_=tel(o.phone
 return`<a class="bk" href="#catalog" onclick="if(sy!=null){history.back();return false}">${t('back_catalog')}</a><div class="ob"><div><div class="c3${ph.length>1?'':' one'}" tabindex="0" role="region" aria-roledescription="${t('carousel')}" aria-label="${t('photos_of',{t:T})}" data-c3="${o.id}"><div class="c3-stage">${ph.map((s,j)=>`<figure class="c3-it" data-i="${j}"><img src="${s}" alt="${t('photo_n',{t:T,n:j+1})}" draggable="false" ${j>2&&j<ph.length-2?'loading="lazy"':''}></figure>`).join('')}</div>${ph.length>1?`<button type="button" class="c3-nav c3-prev" aria-label="${t('prev_photo')}">‹</button><button type="button" class="c3-nav c3-next" aria-label="${t('next_photo')}">›</button>`:''}<span class="cn2 c3-count">1 / ${ph.length}</span></div>${ph.length>1?`<input type="range" class="c3-bar" min="0" max="${ph.length-1}" step="1" value="0" aria-label="${t('scroll_photos')}">`:''}
 <div class="tx"><h3>${t('desc')}</h3><p>${o.desc}</p>${o.features&&o.features.length?`<h3>${t('features')}</h3><ul class="pl">${o.features.map(y=>`<li>${y}</li>`).join('')}</ul>`:''}<h3>${t('near')}</h3><ul class="pl">${NEAR[o.cat].map(y=>`<li>${y}</li>`).join('')}</ul>${locHTML(o)}</div></div>
 <aside class="sd"><div class="ch"><em>${cat(o.cat).t}</em><em>${termOf(o)}</em><em class="st-${o.status||'free'}">${stl(o)}</em></div><h2>${T}</h2><div class="pc">${fmt(o.price)} <small>${priceUnit(o)}</small></div><div class="sg"><div><b>${t('city')}</b>${cityName(o.city)}</div><div><b>${t('district')}</b>${o.district}</div><div><b>${t('area')}</b>${o.area} ${t('m2')}</div><div><b>${t('floor')}</b>${floorOf(o)}</div>${o.rooms?`<div><b>${t('rooms')}</b>${o.rooms}</div>`:''}</div>
-${done?`<p class="note">${t('already',{s:stl(o).toLowerCase()})}</p>`:`<div class="own"><small>${t('owner_contacts')}</small><b>${o.owner||t('owner_default')}</b><a href="${t_}">${o.phone||OWN.ph}</a></div><a class="btn" href="${t_}">${t('call_owner')}</a>`}<a class="btn w" href="${o.tg||TG}?text=${msg}" target="_blank" rel="noopener">${t('write_tg')}</a><button type="button" class="btn w${FAV.includes(o.id)?' on':''}" data-f="${o.id}">${t('fav')}</button></aside></div>${done?'':`<a class="fcall" href="${t_}">${t('call_owner')}</a>`}`};
+${done?`<p class="note">${t('already',{s:stl(o).toLowerCase()})}</p>`:`<div class="own"><small>${t('owner_contacts')}</small><b>${o.owner||t('owner_default')}</b>${t_?`<a href="${t_}">${o.phone}</a>`:''}</div>${t_?`<a class="btn" href="${t_}">${t('call_owner')}</a>`:''}`}${o.tg&&!done?`<a class="btn w" href="${o.tg}?text=${msg}" target="_blank" rel="noopener">${t('write_tg')}</a>`:''}<button type="button" class="btn w${FAV.includes(o.id)?' on':''}" data-f="${o.id}">${t('fav')}</button></aside></div>${done||!t_?'':`<a class="fcall" href="${t_}">${t('call_owner')}</a>`}`};
 const MD=document.querySelector('meta[name=description]'),D0=MD.content;const OG=document.querySelector('meta[property="og:image"]');if(OG)OG.content=new URL(siteAsset('social_preview'),document.baseURI).href;
 function ld(o){let s=$('#ldo');if(!s){s=document.createElement('script');s.id='ldo';s.type='application/ld+json';document.head.append(s)}s.textContent=o?JSON.stringify({'@context':'https://schema.org','@type':'Product',name:o.title,description:o.desc,image:o.photos[0]||IMG[o.cat],offers:{'@type':'Offer',priceCurrency:'UZS',price:o.price,availability:o.status==='free'?'https://schema.org/InStock':'https://schema.org/SoldOut'}}):''}
 /* ===== 3D-карусель фото на странице объекта: свайп/перетаскивание, стрелки, ползунок, по кругу ===== */

@@ -143,7 +143,7 @@ function saveSiteAssets(){
   catch(error){alert(error.message||'Не удалось сохранить изображения в браузере.');return false;}
 }
 renderAssetGrid();
-$('#adLinkInput').value=siteAssets.ad_link||'https://t.me/Resell_Tashkent';
+$('#adLinkInput').value=siteAssets.ad_link||'https://t.me/Arenda_UZB_bot?start=ad';
 $('#saveAdLink').addEventListener('click',()=>{
   const value=$('#adLinkInput').value.trim();
   if(value){
@@ -219,7 +219,7 @@ $('#assetGrid').addEventListener('change',async e=>{
 });
 $('#assetGrid').addEventListener('click',e=>{const b=e.target.closest('[data-asset-reset]');if(!b)return;delete siteAssets[b.dataset.assetReset];saveSiteAssets();renderAssetGrid();$('#assetStatus').textContent='Вернулось исходное изображение. Скачайте site-assets.js, чтобы обновить сайт.';});
 $('#exportAssets').onclick=()=>{const blob=new Blob(['window.RENT_SITE_ASSETS = '+JSON.stringify(siteAssets,null,2)+';\n'],{type:'text/javascript;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='site-assets.js';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-$('#importAssets').onchange=e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;const r=new FileReader();r.onload=()=>{try{const raw=String(r.result).trim().replace(/^window\.RENT_SITE_ASSETS\s*=\s*/, '').replace(/;\s*$/,'');const parsed=JSON.parse(raw);if(!parsed||Array.isArray(parsed)||typeof parsed!=='object')throw new Error();siteAssets=parsed;if(saveSiteAssets()){renderAssetGrid();$('#adLinkInput').value=siteAssets.ad_link||'https://t.me/Resell_Tashkent';$('#assetStatus').textContent='Файл изображений и настройки рекламного блока импортированы.';}}catch(_){alert('Не удалось прочитать файл site-assets.js или JSON.');}};r.readAsText(file);};
+$('#importAssets').onchange=e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;const r=new FileReader();r.onload=()=>{try{const raw=String(r.result).trim().replace(/^window\.RENT_SITE_ASSETS\s*=\s*/, '').replace(/;\s*$/,'');const parsed=JSON.parse(raw);if(!parsed||Array.isArray(parsed)||typeof parsed!=='object')throw new Error();siteAssets=parsed;if(saveSiteAssets()){renderAssetGrid();$('#adLinkInput').value=siteAssets.ad_link||'https://t.me/Arenda_UZB_bot?start=ad';$('#assetStatus').textContent='Файл изображений и настройки рекламного блока импортированы.';}}catch(_){alert('Не удалось прочитать файл site-assets.js или JSON.');}};r.readAsText(file);};
 $('#ef').addEventListener('change',async e=>{
   if(e.target.id!=='photoFiles')return;
   const files=[...e.target.files||[]];e.target.value='';if(!files.length)return;
