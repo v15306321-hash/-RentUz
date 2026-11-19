@@ -8,7 +8,7 @@ import logging
 from decimal import Decimal, ROUND_HALF_UP
 
 from aiogram import F, Router
-from aiogram.filters import Command, CommandObject, CommandStart
+from aiogram.filters import CommandObject, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     CallbackQuery,
@@ -71,7 +71,7 @@ from services.listing_rules import (
     property_requires_floor,
     property_requires_rooms,
 )
-from services.pricing import MIN_SALE_PRICE_USD, calculate_listing_cost, discount_percent, price_error
+from services.pricing import MIN_SALE_PRICE_USD, calculate_listing_cost, commission_rate, discount_percent, price_error, promo_active, promo_end_label
 from .states import AdvertisingForm, ListingForm, MenuForm, Onboarding, PaymentForm, PhotoForm, SearchForm, SupportForm
 
 router = Router()
@@ -84,6 +84,13 @@ PROPERTY_CHOICES = {
     "shop": "property_shop",
     "warehouse": "property_warehouse",
 }
+
+DEAL_KEYS = {"rent": "deal_rent", "daily": "deal_daily", "sale": "deal_sale"}
+
+
+def _deal_from_text(text: str | None) -> str | None:
+    return next((code for code, key in DEAL_KEYS.items() if _matches(text, key)), None)
+
 
 STEP_STATES = {
     "city": ListingForm.city,
@@ -201,7 +208,7 @@ async def _set_listing_step(message: Message, state: FSMContext, step: str) -> N
         await message.answer(tr(language, "floor_prompt"), reply_markup=nav_rows([], language))
         await message.answer(tr(language, "floor_page", start=1, end=10), reply_markup=floor_keyboard(0, language))
     elif step == "price":
-        key = "price_prompt_sale" if data.get("purpose") == "sale" else "price_prompt_rent"
+        key = {"sale": "price_prompt_sale", "daily": "price_prompt_daily"}.get(data.get("purpose"), "price_prompt_rent")
         await message.answer(tr(language, key), reply_markup=nav_rows([], language))
     elif step == "description":
         await message.answer(tr(language, "description_prompt"), reply_markup=skip_keyboard(language))
@@ -276,7 +283,7 @@ def listing_summary_lines(order: dict, language: str) -> list[str]:
     if micro:
         lines.append(f"{tr(language, 'lbl_microdistrict')}: {micro}")
     lines.append(f"{tr(language, 'lbl_property')}: {tr(language, PROPERTY_CHOICES.get(order.get('property_type'), 'property_apartment'))}")
-    lines.append(f"{tr(language, 'lbl_deal')}: {tr(language, 'deal_sale' if order.get('purpose') == 'sale' else 'deal_rent')}")
+    lines.append(f"{tr(language, 'lbl_deal')}: {tr(language, DEAL_KEYS.get(order.get('purpose'), 'deal_rent'))}")
     if order.get("area") is not None:
         lines.append(f"{tr(language, 'lbl_area')}: {Decimal(str(order['area'])).normalize():f} m²")
     if order.get("rooms"):
@@ -284,10 +291,11 @@ def listing_summary_lines(order: dict, language: str) -> list[str]:
     if order.get("property_floor") is not None:
         lines.append(f"{tr(language, 'floor_label')}: {order['property_floor']}")
     if order.get("price_uzs"):
-        is_sale = order.get("purpose") == "sale"
-        label = tr(language, "sale_price" if is_sale else "rent_price")
-        suffix = "" if is_sale else f" {tr(language, 'per_month')}"
-        usd = f" (≈ ${order['price_usd']:,.0f})".replace(",", " ") if order.get("price_usd") else ""
+        purpose = order.get("purpose")
+        is_sale = purpose == "sale"
+        label = tr(language, {"sale": "sale_price", "daily": "daily_price"}.get(purpose, "rent_price"))
+        suffix = "" if is_sale else f" {tr(language, 'per_day' if purpose == 'daily' else 'per_month')}"
+        usd = f" (≈ ${order['price_usd']:,.0f})".replace(",", " ") if is_sale and order.get("price_usd") else ""
         lines.append(f"{label}: {money(order['price_uzs'])} {tr(language, 'currency')}{suffix}{usd}")
     if order.get("description"):
         lines.append(f"{tr(language, 'lbl_description')}: {order['description']}")
@@ -329,7 +337,7 @@ async def _finish_listing(message: Message, state: FSMContext, phone: str) -> No
         "price_uzs": price,
         "price_usd": float(price_usd),
         "exchange_rate": float(rate),
-        "commission_rate": float(Decimal("0.001") if purpose == "sale" else Decimal("0.01")),
+        "commission_rate": float(commission_rate(purpose)),
         "base_fee": base_fee,
         "service_fee": base_fee,
         "discount_percent": 0,
@@ -348,6 +356,7 @@ async def _finish_listing(message: Message, state: FSMContext, phone: str) -> No
     summary += [
         f"{tr(language, 'exchange_rate')}: 1 USD = {Decimal(str(rate)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP):,.2f} UZS".replace(",", " "),
         f"{tr(language, 'service_fee')}: {money(base_fee)} {tr(language, 'currency')}",
+        *([tr(language, "promo_fee_line", until=promo_end_label(language))] if promo_active() else []),
         "",
         tr(language, "period_warning"),
     ]
@@ -393,11 +402,6 @@ async def _after_start(message: Message, state: FSMContext, language: str, paylo
         await _show_main(message, state, language)
 
 
-@router.message(Command("myid"))
-async def my_id(message: Message):
-    await message.answer(f"Your Telegram ID: {message.from_user.id}")
-
-
 # ------------------------------------------------------------------ navigation (из любого шага)
 
 @router.message(F.text.in_(all_variants("home")))
@@ -420,7 +424,10 @@ async def go_back(message: Message, state: FSMContext):
         await _show_main(message, state, language)
         return
 
-    if current == PhotoForm.waiting_photos.state:
+    if current == PhotoForm.preview.state:
+        await state.set_state(PhotoForm.waiting_photos)
+        await message.answer(tr(language, "photos_prompt"), reply_markup=photos_keyboard(language))
+    elif current == PhotoForm.waiting_photos.state:
         await _set_listing_step(message, state, "phone")
     elif current in {PaymentForm.choosing_method.state, PaymentForm.waiting_receipt.state, PaymentForm.waiting_crypto.state}:
         if current == PaymentForm.choosing_method.state:
@@ -497,7 +504,10 @@ async def menu_my(message: Message, state: FSMContext):
 async def menu_fee(message: Message, state: FSMContext):
     language = await _language(message, state)
     ad_lines = "\n".join(f"   • {ad_tariff_label(days, language)}" for days in AD_TARIFFS)
-    await message.answer(tr(language, "fee_info", ad_tariffs=ad_lines), reply_markup=main_menu_keyboard(language))
+    text = tr(language, "fee_info", ad_tariffs=ad_lines)
+    if promo_active():
+        text = tr(language, "promo_line", until=promo_end_label(language)) + "\n\n" + text
+    await message.answer(text, reply_markup=main_menu_keyboard(language))
 
 
 @router.message(F.text.in_(all_variants("menu_referral")))
@@ -586,17 +596,14 @@ async def search_city_handler(message: Message, state: FSMContext):
 async def search_deal_handler(message: Message, state: FSMContext):
     data = await state.get_data()
     language = await _language(message, state)
-    if _matches(message.text, "deal_rent"):
-        purpose = "rent"
-    elif _matches(message.text, "deal_sale"):
-        purpose = "sale"
-    else:
+    purpose = _deal_from_text(message.text)
+    if not purpose:
         await message.answer(tr(language, "invalid_choice"), reply_markup=deal_keyboard(language))
         return
 
     city = label_for((city_entry(data.get("city_key")) or {}).get("name", {}), language) or data.get("city")
     await _show_main_silent(state, language)
-    deal = tr(language, "search_deal_sale" if purpose == "sale" else "search_deal_rent")
+    deal = tr(language, f"search_deal_{purpose}")
     await message.answer(
         tr(language, "search_site_info", city=city, deal=deal),
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
@@ -608,8 +615,8 @@ async def search_deal_handler(message: Message, state: FSMContext):
 def _site_search_url(city_key: str | None, purpose: str) -> str:
     city_ru = label_for((city_entry(city_key) or {}).get("name", {}), "ru")
     params = {"city": city_ru} if city_ru else {}
-    if purpose == "sale":
-        params["deal"] = "sale"
+    if purpose in ("sale", "daily"):
+        params["deal"] = purpose
     query = f"?{urlencode(params)}" if params else ""
     return f"{SITE_URL}/{query}#catalog"
 
@@ -730,11 +737,8 @@ async def listing_property_type(message: Message, state: FSMContext):
 @router.message(ListingForm.deal, F.text)
 async def listing_deal(message: Message, state: FSMContext):
     language = await _language(message, state)
-    if _matches(message.text, "deal_rent"):
-        purpose = "rent"
-    elif _matches(message.text, "deal_sale"):
-        purpose = "sale"
-    else:
+    purpose = _deal_from_text(message.text)
+    if not purpose:
         await message.answer(tr(language, "invalid_choice"), reply_markup=deal_keyboard(language))
         return
     await state.update_data(purpose=purpose)
@@ -903,11 +907,43 @@ async def photos_done(message: Message, state: FSMContext):
         await message.answer(tr(language, "not_found"), reply_markup=main_menu_keyboard(language))
         await _show_main_silent(state, language)
         return
-    if not await get_order_photos(int(order_id)):
+    photos = await get_order_photos(int(order_id))
+    if not photos:
         await message.answer(tr(language, "photos_required"), reply_markup=photos_keyboard(language))
         return
+    await _show_preview(message, state, order, photos, language)
+
+
+async def _show_preview(message: Message, state: FSMContext, order: dict, photos: list[dict], language: str) -> None:
+    """Предпросмотр: объявление в том виде, в каком оно выйдет в канале города."""
+    from services.channels import build_caption, preview_keyboard
+    await state.set_state(PhotoForm.preview)
+    await message.answer(tr(language, "preview_intro"))
+    await message.answer_photo(photos[0]["file_id"], caption=build_caption(order), parse_mode="HTML",
+                               reply_markup=preview_keyboard(order))
+    extra = [tr(language, "preview_more_photos", count=len(photos) - 1)] if len(photos) > 1 else []
+    await message.answer("\n\n".join(extra + [tr(language, "preview_question")]),
+                         reply_markup=nav_rows([[tr(language, "preview_confirm")]], language))
+
+
+@router.message(PhotoForm.preview, F.text.in_(all_variants("preview_confirm")))
+async def preview_confirm(message: Message, state: FSMContext):
+    data = await state.get_data()
+    language = data.get("language", "ru")
+    order = await get_order(data["order_id"]) if data.get("order_id") else None
+    if not order or order["user_id"] != message.from_user.id or order["status"] not in DRAFT_STATUSES:
+        await message.answer(tr(language, "not_found"), reply_markup=main_menu_keyboard(language))
+        await _show_main_silent(state, language)
+        return
     from handlers.payment import show_listing_payment
-    await show_listing_payment(message, state, int(order_id), language)
+    await show_listing_payment(message, state, int(order["id"]), language)
+
+
+@router.message(PhotoForm.preview)
+async def preview_wrong_input(message: Message, state: FSMContext):
+    language = await _language(message, state)
+    await message.answer(tr(language, "preview_question"),
+                         reply_markup=nav_rows([[tr(language, "preview_confirm")]], language))
 
 
 @router.message(PhotoForm.waiting_photos)

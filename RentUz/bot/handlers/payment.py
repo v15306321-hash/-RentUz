@@ -9,14 +9,13 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from aiogram import F, Router
-from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto, Message
 
 from config import OWNER_CHAT_ID, PAYMENT_CARDS, PAYMENT_RECIPIENT, SITE_URL
 from database.db import (
+    has_previous_listing,
     get_order,
-    get_order_by_number,
     get_order_photos,
     qualify_referral,
     referral_stats,
@@ -27,9 +26,9 @@ from database.db import (
 )
 from keyboards import main_menu_keyboard, money, nav_rows, payment_keyboard
 from localization import normalize_language, tr
-from services.channels import check_channels, mark_inactive, post_listing
+from services.channels import mark_inactive, post_listing
 from services.crypto_pay import create_crypto_invoice, get_crypto_invoice_status
-from services.pricing import MAX_DISCOUNT_FRIENDS, apply_discount, discount_percent, service_fee_usdt
+from services.pricing import MAX_DISCOUNT_FRIENDS, apply_discount, discount_percent, promo_active, service_fee_usdt
 from .states import PaymentForm
 
 router = Router()
@@ -37,7 +36,8 @@ log = logging.getLogger(__name__)
 
 PAYABLE_STATUSES = ("awaiting_photos", "awaiting_payment", "awaiting_receipt", "awaiting_crypto_payment")
 METHODS = PAYMENT_CARDS  # совместимость: {"Click": ("click", "8802 …"), …}
-METHOD_LABELS = {"click": "Click", "humo": "Humo", "uzum_bank": "Uzum Bank", "crypto_pay": "Crypto Pay"}
+METHOD_LABELS = {"click": "Click", "humo": "Humo", "uzum_bank": "Uzum Bank", "crypto_pay": "Crypto Pay",
+                 "promo": "🎁 Акция — бесплатно"}
 
 
 def _admin_card(order: dict) -> str:
@@ -60,12 +60,43 @@ async def _send_photos_to_owner(bot, order_id: int) -> None:
         await bot.send_media_group(OWNER_CHAT_ID, [InputMediaPhoto(media=p["file_id"]) for p in photos[:10]])
 
 
+async def send_for_moderation(bot, order: dict, title: str) -> None:
+    markup = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="✅ Опубликовать", callback_data=f"publish_order:{order['id']}")],
+        [InlineKeyboardButton(text="❌ Отклонить", callback_data=f"decline_order:{order['id']}")],
+    ])
+    try:
+        await _send_photos_to_owner(bot, order["id"])
+        await bot.send_message(OWNER_CHAT_ID, f"{title}\n\n" + _admin_card(order), reply_markup=markup)
+    except Exception:
+        log.exception("Failed to send %s for moderation", order.get("order_number"))
+
+
+async def _free_by_promo(message: Message, state: FSMContext, order: dict, language: str) -> bool:
+    """Акция «первое объявление бесплатно»: без оплаты сразу на проверку администратору."""
+    if not promo_active() or await has_previous_listing(order["user_id"], order["id"]):
+        return False
+    await release_referral_credits(order["id"])  # скидка за друзей сохранится на следующее объявление
+    updated = await transition_order(order["id"], PAYABLE_STATUSES, "moderation", discount_percent=0, service_fee=0,
+                                     payment_method="promo", payment_status="free")
+    if not updated:
+        return False
+    await state.set_state(None)
+    await state.set_data({"language": language})
+    await message.answer(tr(language, "promo_free_sent", number=updated["order_number"]),
+                         reply_markup=main_menu_keyboard(language))
+    await send_for_moderation(message.bot, updated, "🎁 АКЦИЯ: ПЕРВОЕ ОБЪЯВЛЕНИЕ БЕСПЛАТНО — ПРОВЕРЬТЕ")
+    return True
+
+
 async def show_listing_payment(message: Message, state: FSMContext, order_id: int | str, language: str) -> None:
     """Экран оплаты: считает комиссию со скидкой за друзей и показывает способы оплаты."""
     order = await get_order(order_id)
     if not order or order["user_id"] != message.chat.id or order["status"] not in PAYABLE_STATUSES:
         await message.answer(tr(language, "not_found"), reply_markup=main_menu_keyboard(language))
         await state.set_state(None)
+        return
+    if await _free_by_promo(message, state, order, language):
         return
 
     friends = await reserve_referral_credits(order["user_id"], order["id"], MAX_DISCOUNT_FRIENDS)
@@ -241,16 +272,7 @@ async def check_crypto_payment(callback: CallbackQuery, state: FSMContext):
                                       reply_markup=main_menu_keyboard(language))
         await state.set_state(None)
         await state.set_data({"language": language})
-        markup = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Опубликовать", callback_data=f"publish_order:{order_id}")],
-            [InlineKeyboardButton(text="❌ Отклонить (возврат)", callback_data=f"decline_order:{order_id}")],
-        ])
-        try:
-            await _send_photos_to_owner(callback.bot, order_id)
-            await callback.bot.send_message(OWNER_CHAT_ID, "💎 ОПЛАЧЕНО CRYPTO PAY — ПРОВЕРЬТЕ ОБЪЯВЛЕНИЕ\n\n" + _admin_card(order),
-                                            reply_markup=markup)
-        except Exception:
-            log.exception("Failed to notify owner about crypto payment")
+        await send_for_moderation(callback.bot, order, "💎 ОПЛАЧЕНО CRYPTO PAY — ПРОВЕРЬТЕ ОБЪЯВЛЕНИЕ")
     elif status == "expired":
         await update_order(order_id, payment_status="expired", status="awaiting_payment")
         await callback.answer(tr(language, "invoice_expired"), show_alert=True)
@@ -387,27 +409,3 @@ async def unpublish_order_cb(callback: CallbackQuery):
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.message.answer(f"🗑 {order['order_number']} снято с сайта.")
     await callback.answer()
-
-
-@router.message(Command("unpublish"))
-async def unpublish_command(message: Message, command: CommandObject):
-    """/unpublish R-12 — снять объявление с сайта (только администратор)."""
-    if not _is_owner(message):
-        return
-    order = await get_order_by_number((command.args or "").strip()) if command.args else None
-    if not order:
-        await message.answer("Использование: /unpublish R-12")
-        return
-    if await _unpublish(message.bot, order["id"]):
-        await message.answer(f"🗑 {order['order_number']} снято с сайта.")
-    else:
-        await message.answer(f"{order['order_number']} сейчас не опубликовано (статус: {order['status']}).")
-
-
-@router.message(Command("channels"))
-async def channels_command(message: Message):
-    """/channels — проверить, может ли бот публиковать в городские каналы."""
-    if not _is_owner(message):
-        return
-    report = await check_channels(message.bot)
-    await message.answer("📡 Каналы для автопостинга:\n\n" + "\n".join(report))

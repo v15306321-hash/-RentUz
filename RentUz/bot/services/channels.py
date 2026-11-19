@@ -67,10 +67,11 @@ def build_caption(order: dict) -> str:
     if order.get("property_floor") is not None:
         specs.append(f"{order['property_floor']} этаж")
     price = money(order.get("price_uzs") or 0)
-    deal_ru = "Продажа" if is_sale else "Аренда"
-    deal_uz = "Sotuv" if is_sale else "Ijara"
-    unit_ru = "" if is_sale else " / мес"
-    unit_uz = "" if is_sale else " / oy"
+    purpose = order.get("purpose")
+    deal_ru = {"sale": "Продажа", "daily": "Посуточно"}.get(purpose, "Аренда")
+    deal_uz = {"sale": "Sotuv", "daily": "Kunlik"}.get(purpose, "Ijara")
+    unit_ru = {"sale": "", "daily": " / сутки"}.get(purpose, " / мес")
+    unit_uz = {"sale": "", "daily": " / sutka"}.get(purpose, " / oy")
     usd = f" (≈ ${order['price_usd']:,.0f})".replace(",", " ") if is_sale and order.get("price_usd") else ""
 
     lines = [
@@ -90,7 +91,7 @@ def build_caption(order: dict) -> str:
         "",
         f"🇺🇿 {deal_uz} · {PROPERTY_UZ.get(order.get('property_type'), '')} · {html.escape(place_uz)} · {price} so'm{unit_uz}",
         "",
-        " ".join([_tag(city_ru), "#аренда" if not is_sale else "#продажа", "#" + order["order_number"].replace("-", "")]),
+        " ".join([_tag(city_ru), {"sale": "#продажа", "daily": "#посуточно"}.get(purpose, "#аренда"), "#" + order["order_number"].replace("-", "")]),
     ]
     caption = "\n".join(lines)
     return caption[:1024]
@@ -103,6 +104,11 @@ def _keyboard(order: dict, active: bool) -> InlineKeyboardMarkup:
     rows.append([InlineKeyboardButton(text="📝 Разместить своё · E'lon berish",
                                       url=f"https://t.me/{BOT_USERNAME}?start=list")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def preview_keyboard(order: dict) -> InlineKeyboardMarkup:
+    """Те же кнопки, что будут под постом в канале (ссылка на сайт заработает после публикации)."""
+    return _keyboard(order, True)
 
 
 async def _notify_owner(bot: Bot, text: str) -> None:

@@ -46,3 +46,7 @@ PAYMENT_CARDS = {
     "Humo": ("humo", os.getenv("CARD_HUMO", "9860 0101 4036 3283")),
     "Uzum Bank": ("uzum_bank", os.getenv("CARD_UZUM", "4916 9903 1742 4379")),
 }
+
+# Акция «первое объявление бесплатно». Дата включительно (по Ташкенту), формат ГГГГ-ММ-ДД.
+# Чтобы продлить — поменяйте дату в Render → Environment; чтобы выключить — PROMO_FREE_FIRST_UNTIL=off
+PROMO_FREE_FIRST_UNTIL = os.getenv("PROMO_FREE_FIRST_UNTIL", "2026-12-19").strip()

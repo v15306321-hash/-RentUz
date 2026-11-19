@@ -121,6 +121,8 @@ CREATE INDEX IF NOT EXISTS referrals_referrer ON referrals(referrer_id);
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS rented_at TIMESTAMPTZ;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS channel_chat TEXT;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS channel_message_id BIGINT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS confirmed_at TIMESTAMPTZ;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS reminded_at TIMESTAMPTZ;
 
 CREATE TABLE IF NOT EXISTS fsm_storage (
     key        TEXT PRIMARY KEY,
@@ -136,7 +138,7 @@ ORDER_COLUMNS = {
     "price_uzs", "price_usd", "exchange_rate", "commission_rate", "base_fee", "discount_percent",
     "service_fee", "phone", "contact_name", "contact_username", "payment_method", "payment_status",
     "receipt_file_id", "crypto_invoice_id", "crypto_invoice_url", "published_at",
-    "rented_at", "channel_chat", "channel_message_id",
+    "rented_at", "channel_chat", "channel_message_id", "confirmed_at", "reminded_at",
 }
 
 RENTED_VISIBLE_DAYS = 7  # сколько дней «Занято» висит на сайте
@@ -333,6 +335,34 @@ async def get_photo(photo_id: int) -> dict | None:
         "SELECT p.*, o.status AS order_status FROM order_photos p JOIN orders o ON o.id = p.order_id "
         "WHERE p.id = $1", int(photo_id),
     ))
+
+
+async def has_previous_listing(user_id: int, exclude_order_id: int) -> bool:
+    """Подавал ли пользователь уже объявление (оплаченное, бесплатное по акции или на проверке)."""
+    return bool(await pool().fetchval(
+        "SELECT 1 FROM orders WHERE user_id = $1 AND id <> $2 AND ("
+        "status IN ('payment_review', 'moderation', 'published', 'rented', 'unpublished') "
+        "OR payment_method = 'promo') LIMIT 1",
+        user_id, int(exclude_order_id),
+    ))
+
+
+REMIND_AFTER_DAYS = 25
+
+
+async def due_reminders(limit: int = 50) -> list[dict]:
+    """Опубликованные объявления, которые не подтверждались 25 дней и по которым ещё не было напоминания."""
+    rows = await pool().fetch(
+        """
+        SELECT * FROM orders
+        WHERE status = 'published'
+          AND coalesce(confirmed_at, published_at) < now() - make_interval(days => $1)
+          AND (reminded_at IS NULL OR reminded_at < coalesce(confirmed_at, published_at))
+        ORDER BY published_at LIMIT $2
+        """,
+        REMIND_AFTER_DAYS, limit,
+    )
+    return [dict(r) for r in rows]
 
 
 async def user_orders(user_id: int, limit: int = 10) -> list[dict]:

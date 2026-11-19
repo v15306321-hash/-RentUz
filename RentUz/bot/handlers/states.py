@@ -27,6 +27,7 @@ class ListingForm(StatesGroup):
 
 class PhotoForm(StatesGroup):
     waiting_photos = State()
+    preview = State()
 
 
 class SearchForm(StatesGroup):

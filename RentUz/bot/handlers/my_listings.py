@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from database.db import get_order, transition_order, user_orders
+from database.db import due_reminders, get_order, transition_order, update_order, user_orders
 from localization import normalize_language, tr
 from services.channels import mark_inactive, site_link
 
@@ -136,3 +136,52 @@ async def do_action(callback: CallbackQuery):
         pass
     await callback.answer(tr(language, "my_done_ok" if action == "done" else "my_remove_ok"), show_alert=True)
     log.info("Owner %s set %s to %s", callback.from_user.id, updated["order_number"], updated["status"])
+
+
+# ------------------------------------------------------------------ напоминание «Объявление ещё актуально?»
+
+def _title(order: dict, language: str) -> str:
+    from handlers.start import PROPERTY_CHOICES
+    kind = tr(language, PROPERTY_CHOICES.get(order.get("property_type"), "property_apartment"))
+    return f"{kind}, {order.get('microdistrict') or order.get('district') or order.get('city') or ''}".strip(", ")
+
+
+async def send_due_reminders(bot) -> int:
+    """Вызывается фоновой задачей раз в 30 минут. Возвращает число отправленных напоминаний."""
+    sent = 0
+    for order in await due_reminders():
+        language = normalize_language(order.get("language"))
+        kind = _kind(order)
+        markup = InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text=tr(language, "remind_yes"), callback_data=f"rem_yes:{order['id']}"),
+            InlineKeyboardButton(text=tr(language, f"my_btn_done_{kind}"), callback_data=f"my_do:done:{order['id']}"),
+        ]])
+        try:
+            await bot.send_message(order["user_id"], tr(language, "remind_text", number=order["order_number"],
+                                                        title=_title(order, language),
+                                                        done_word=tr(language, f"remind_done_word_{kind}")),
+                                   reply_markup=markup)
+            sent += 1
+        except Exception as exc:  # пользователь заблокировал бота и т.п. — не повторяем бесконечно
+            log.warning("Reminder for %s not delivered: %s", order["order_number"], exc)
+        await update_order(order["id"], reminded_at=datetime.now(timezone.utc))
+    return sent
+
+
+@router.callback_query(F.data.startswith("rem_yes:"))
+async def reminder_yes(callback: CallbackQuery):
+    try:
+        order = await get_order(int(callback.data.split(":", 1)[1]))
+    except ValueError:
+        order = None
+    if not order or order["user_id"] != callback.from_user.id:
+        await callback.answer(tr("ru", "invalid_payment_order"), show_alert=True)
+        return
+    language = normalize_language(order.get("language"))
+    if order["status"] != "published":
+        await callback.answer(tr(language, "my_not_allowed"), show_alert=True)
+        return
+    await update_order(order["id"], confirmed_at=datetime.now(timezone.utc))
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(tr(language, "remind_yes_ok"))
+    await callback.answer()

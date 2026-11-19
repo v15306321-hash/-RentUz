@@ -8,6 +8,7 @@ const CAT=[
 {k:'house',t:'Дома и дачи',d:'Частные дома с двором и дачи для семьи или отдыха.',s:['Дома с участком','Дачи с садом','Сезонно и круглый год'],p:'4% 75%'},
 {k:'office',t:'Офисы',d:'Кабинеты и open space в бизнес-центрах и новых зданиях.',s:['От 20 м²','Open space','С парковкой'],p:'65% 40%'},
 {k:'shop',t:'Магазины и склады',d:'Торговые помещения на первой линии, под кафе и склады.',s:['Первая линия','Под кафе и услуги','Склады с пандусом'],p:'54% 100%'}];
+if(window.LANG==='uz')CAT.forEach(c=>Object.assign(c,I18N_CAT_UZ[c.k]));
 const T0=document.title;
 const ASSET_DEFAULTS={
   home_desktop:'assets/img/7a7fc5e5.jpg',home_mobile:'assets/img/6416a0d7.jpg',
@@ -22,7 +23,9 @@ const ASSET_DEFAULTS={
 };
 let SITE_ASSETS={...ASSET_DEFAULTS,...(window.RENT_SITE_ASSETS||{})};
 try{SITE_ASSETS={...SITE_ASSETS,...JSON.parse(localStorage.getItem('rent_site_assets_v1')||'{}')}}catch(_){}
-const siteAsset=k=>SITE_ASSETS[k]||ASSET_DEFAULTS[k]||'';
+/* Абсолютный адрес: относительный путь внутри CSS-переменной браузер считает от папки css/ — из-за этого не грузились фото обложки и направлений. */
+const absUrl=u=>{if(!u)return'';try{return new URL(u,document.baseURI).href}catch(_){return u}};
+const siteAsset=k=>absUrl(SITE_ASSETS[k]||ASSET_DEFAULTS[k]||'');
 function applyAdBanner(){
   const banner=$('#adBanner'),image=$('#adImage'),placeholder=$('#adPlaceholder');
   if(!banner||!image||!placeholder)return;
@@ -85,9 +88,10 @@ const CT={'Алмалык':{p:'в Алмалыке',f:1,d:['Радуга','Ой�
 /* ↓ Контакты владельца по умолчанию; для отдельного объекта можно добавить 13-й элемент {n:'Имя',ph:'+998…',tg:'https://t.me/…'} */
 const OWN={n:'Владелец объекта',ph:'+998 90 000 00 00'};
 const NEAR={flat:['Школа','Детский сад','Больница','Магазин','Рынок'],house:['Школа','Детский сад','Больница','Магазин','Рынок'],office:['Банки и кафе','Остановка транспорта','Парковка','Магазины','Бизнес-центры'],shop:['Высокая проходимость','Остановка транспорта','Парковка','Рынок','Банк рядом']};
+if(window.LANG==='uz')Object.assign(NEAR,I18N_NEAR_UZ);
 const SLOTS={flat:['Гостиная','Спальня','Кухня','Санузел','Балкон','Вид из окна'],house:['Гостиная','Спальня','Кухня','Санузел','Двор','Терраса'],office:['Рабочая зона','Переговорная','Кухня','Санузел','Вход','Парковка'],shop:['Торговый зал','Витрина','Подсобка','Санузел','Вход','Парковка']};
 /* ===== v2: данные, поиск, избранное, статусы, галерея ===== */
-const ST={free:'Свободно',rented:'Занято'},stl=o=>ST[o.status]||ST.free;
+const ST={free:t('st_free'),rented:t('st_rented')},stl=o=>ST[o.status]||ST.free;
 /* Объявления: data/listings.js + Telegram-бот (API). Черновики из админки видны только в браузере администратора. */
 const LS='arenda_listings_v1';let A=null;try{A=JSON.parse(localStorage.getItem(LS))}catch(_){}
 if(!Array.isArray(A))A=window.LISTINGS||[];
@@ -96,25 +100,42 @@ let statusMigration=false;A=A.map(o=>{const status=o.status==='rented'?'rented':
 if(statusMigration){try{localStorage.setItem(LS,JSON.stringify(A))}catch(_){}}
 let FAV=[];try{FAV=JSON.parse(localStorage.getItem('fav'))||[]}catch(_){}
 const saveFav=()=>{try{localStorage.setItem('fav',JSON.stringify(FAV))}catch(_){}};
-const fmt=n=>n.toLocaleString('ru-RU'),cat=k=>CAT.find(c=>c.k===k),tel=p=>'tel:'+(p||OWN.ph).replace(/[^+\d]/g,'');
+const fmt=n=>Number(n||0).toLocaleString('ru-RU'),cat=k=>CAT.find(c=>c.k===k),tel=p=>'tel:'+(p||OWN.ph).replace(/[^+\d]/g,'');
+/* Перевод полей объявления для показа: тип сделки, единица цены, этаж, название объявлений из бота */
+const TERM_KEY={'Посуточно':'term_daily','На месяц':'term_month','Продажа':'term_sale'},UNIT_KEY={'мес':'unit_month','сутки':'unit_day'};
+const termOf=o=>TERM_KEY[o.term]?t(TERM_KEY[o.term]):o.term;
+const unitOf=o=>o.unit?(UNIT_KEY[o.unit]?t(UNIT_KEY[o.unit]):o.unit):'';
+const priceUnit=o=>`${t('sum')}${unitOf(o)?' / '+unitOf(o):''}`;
+const floorOf=o=>o.floor_num!=null&&o.floor_num!==''?t('floor_n',{n:o.floor_num}):(o.floor||'—');
+const titleOf=o=>{if(o.source!=='telegram_bot'||!o.kind)return o.title;const n=+o.rooms||0;
+  if(o.kind==='apartment')return n?t('t_apartment_n',{n}):t('t_apartment');if(o.kind==='house')return n?t('t_house_n',{n}):t('t_house');
+  return t('t_'+o.kind)||o.title};
 const F0=()=>({q:'',dist:'',pmin:'',pmax:'',amin:'',amax:'',rooms:'',st:'',sort:'',fav:false});
 let city='Алмалык',cur='all',dl='',sy=null,F=F0();
-const drawDirs=()=>{$('#dirs').innerHTML=CAT.map(c=>{const n=A.filter(x=>x.cat===c.k&&x.city===city).length;return`<div class="dc" data-go="${c.k}" tabindex="0" role="button" style="--im:url(${IMG[c.k]})"><h3>${c.t}</h3><p>${c.d}</p><ul>${c.s.map(x=>`<li>${x}</li>`).join('')}</ul><span>Смотреть объекты (${n})</span></div>`}).join('')};
-const DL=['Посуточно','На месяц','Приобрести'],DM={'Посуточно':'Посуточно','На месяц':'На месяц','Приобрести':'Продажа'};
-const rows=()=>{const q=F.q.trim().toLowerCase();return A.filter(o=>o.city===city&&(cur==='all'||o.cat===cur)&&(!dl||o.term===DM[dl])&&(!F.dist||o.district===F.dist)&&(!F.pmin||o.price>=+F.pmin)&&(!F.pmax||o.price<=+F.pmax)&&(!F.amin||o.area>=+F.amin)&&(!F.amax||o.area<=+F.amax)&&(!F.rooms||(F.rooms==='4'?o.rooms>=4:o.rooms===+F.rooms))&&(!F.st||o.status===F.st)&&(!F.fav||FAV.includes(o.id))&&(!q||`${o.title} ${o.district} ${o.desc}`.toLowerCase().includes(q)))};
-const card=o=>{const f=FAV.includes(o.id),s=o.status||'free';return`<article class="lc s-${s}" data-i="${o.id}"><div class="pw"><button type="button" class="ph" data-g="${o.id}" aria-label="Смотреть фото: ${o.title}" style="background-image:url('${o.photos[0]||IMG[o.cat]}')"></button><span class="bd st-${s}">${stl(o)}</span><span class="cn2">${o.photos.length||1} фото</span><button type="button" class="hr${f?' on':''}" data-f="${o.id}" aria-label="Добавить в избранное: ${o.title}">♥</button></div><div class="cb"><div class="ch"><em>${cat(o.cat).t}</em><em>${o.term}</em></div><h3>${o.title}</h3><div class="dd">${o.district}</div><div class="pc">${fmt(o.price)} <small>сум${o.unit?' / '+o.unit:''}</small></div><div class="sp"><span>${o.area} м²</span><span>${o.rooms?o.rooms+' комн.':o.floor}</span></div>${s==='rented'?'':`<a class="cl2" href="${tel(o.phone)}">Позвонить</a>`}</div></article>`};
-function draw(){$('#dtabs').innerHTML=DL.map(d=>`<button data-d="${d}" class="${d===dl?'on':''}">${d}</button>`).join('');$('#tabs').innerHTML=[['all','Все'],...CAT.map(c=>[c.k,c.t])].map(([k,t])=>`<button data-k="${k}" class="${k===cur?'on':''}">${t}</button>`).join('');
+const drawDirs=()=>{$('#dirs').innerHTML=CAT.map(c=>{const n=A.filter(x=>x.cat===c.k&&x.city===city).length;return`<div class="dc" data-go="${c.k}" tabindex="0" role="button" style="--im:url(${IMG[c.k]})"><h3>${c.t}</h3><p>${c.d}</p><ul>${c.s.map(x=>`<li>${x}</li>`).join('')}</ul><span>${t('view_objects',{n})}</span></div>`}).join('')};
+const DL=['Посуточно','На месяц','Приобрести'],DLK={'Посуточно':'tab_daily','На месяц':'tab_month','Приобрести':'tab_sale'},DM={'Посуточно':'Посуточно','На месяц':'На месяц','Приобрести':'Продажа'};
+const rows=()=>{const q=F.q.trim().toLowerCase();return A.filter(o=>o.city===city&&(cur==='all'||o.cat===cur)&&(!dl||o.term===DM[dl])&&(!F.dist||o.district===F.dist)&&(!F.pmin||o.price>=+F.pmin)&&(!F.pmax||o.price<=+F.pmax)&&(!F.amin||o.area>=+F.amin)&&(!F.amax||o.area<=+F.amax)&&(!F.rooms||(F.rooms==='4'?o.rooms>=4:o.rooms===+F.rooms))&&(!F.st||o.status===F.st)&&(!F.fav||FAV.includes(o.id))&&(!q||`${o.title} ${titleOf(o)} ${o.district} ${o.desc}`.toLowerCase().includes(q)))};
+const card=o=>{const f=FAV.includes(o.id),s=o.status||'free';return`<article class="lc s-${s}" data-i="${o.id}"><div class="pw"><button type="button" class="ph" data-g="${o.id}" aria-label="${t('see_photos',{t:titleOf(o)})}" style="background-image:url('${o.photos[0]||IMG[o.cat]}')"></button><span class="bd st-${s}">${stl(o)}</span><span class="cn2">${t('photos_n',{n:o.photos.length||1})}</span><button type="button" class="hr${f?' on':''}" data-f="${o.id}" aria-label="${t('add_fav',{t:titleOf(o)})}">♥</button></div><div class="cb"><div class="ch"><em>${cat(o.cat).t}</em><em>${termOf(o)}</em></div><h3>${titleOf(o)}</h3><div class="dd">${o.district}</div><div class="pc">${fmt(o.price)} <small>${priceUnit(o)}</small></div><div class="sp"><span>${o.area} ${t('m2')}</span><span>${o.rooms?t('rooms_n',{n:o.rooms}):floorOf(o)}</span></div>${s==='rented'?'':`<a class="cl2" href="${tel(o.phone)}">${t('call')}</a>`}</div></article>`};
+function draw(){$('#dtabs').innerHTML=DL.map(d=>`<button data-d="${d}" class="${d===dl?'on':''}">${t(DLK[d])}</button>`).join('');$('#tabs').innerHTML=[['all',t('all')],...CAT.map(c=>[c.k,c.t])].map(([k,t])=>`<button data-k="${k}" class="${k===cur?'on':''}">${t}</button>`).join('');
 const r=rows(),s=F.sort;if(s)r.sort((a,b)=>s==='p'?a.price-b.price:s==='d'?b.price-a.price:b.area-a.area);
-$('#fn').textContent=FAV.length;$('#fv').classList.toggle('on',F.fav);$('#fc').textContent='Найдено: '+r.length;
-$('#gal').innerHTML=r.map(card).join('')||(A.some(o=>o.city===city)?'<p class="note">По этим фильтрам объектов нет. Измените условия или напишите нам — подберём вариант.</p>':`<div class="empty"><b>${city}: объявлений пока нет</b><p>Каталог только запускается — первые объекты появятся совсем скоро. Сдаёте или продаёте недвижимость? Разместите объявление через нашего бота, и его первыми увидят клиенты.</p><a class="btn" href="${OWNER_BOT}?start=list" target="_blank" rel="noopener">Разместить объявление</a></div>`)}
+$('#fn').textContent=FAV.length;$('#fv').classList.toggle('on',F.fav);$('#fc').textContent=t('found',{n:r.length});updFltCount();
+$('#gal').innerHTML=r.map(card).join('')||(A.some(o=>o.city===city)?`<p class="note">${t('no_match')}</p>`:`<div class="empty"><b>${t('empty_title',{city:cityName(city)})}</b><p>${t('empty_text')}</p><a class="btn" href="${OWNER_BOT}?start=list" target="_blank" rel="noopener">${t('empty_btn')}</a></div>`)}
 const sel=k=>{cur=k;draw()};
-const fillDist=()=>{const available=[...new Set([...CT[city].d,...A.filter(x=>x.city===city).map(x=>x.district).filter(Boolean)])];$('#flt [name=dist]').innerHTML='<option value="">Все районы</option>'+available.map(x=>`<option>${x}</option>`).join('');F.dist=''};
+const fillDist=()=>{const available=[...new Set([...CT[city].d,...A.filter(x=>x.city===city).map(x=>x.district).filter(Boolean)])];$('#flt [name=dist]').innerHTML=`<option value="">${t('all_districts')}</option>`+available.map(x=>`<option>${x}</option>`).join('');F.dist=''};
 $('#flt').oninput=e=>{if(e.target.name){F[e.target.name]=e.target.value;draw()}};
 $('#flt').onsubmit=e=>e.preventDefault();
 $('#flt').onreset=()=>setTimeout(()=>{F=F0();draw()});
 $('#fv').onclick=()=>{F.fav=!F.fav;draw()};
+/* Фильтры на телефоне спрятаны под кнопку «Фильтры» (на компьютере всегда открыты) */
+const fltT=$('#fltToggle'),fltF=$('#flt');
+if(fltT)fltT.onclick=()=>{const o=!fltF.classList.contains('open');fltF.classList.toggle('open',o);fltT.setAttribute('aria-expanded',String(o))};
+function updFltCount(){const b=$('#fltN');if(!b)return;const n=['q','dist','pmin','pmax','amin','amax','rooms','st','sort'].filter(k=>F[k]).length+(F.fav?1:0);b.hidden=!n;b.textContent=n}
+/* Акция в блоке «Выставить свою недвижимость»: дата из js/config.js, после окончания строка скрывается сама */
+(()=>{const el=$('#promoLine'),v=window.RENT_PROMO_UNTIL;if(!el||!v)return;const d=new Date(v+'T23:59:59+05:00');if(isNaN(d)||d<new Date())return;
+  const m=window.LANG==='uz'?['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr']:['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  const day=+v.slice(8,10),mon=m[+v.slice(5,7)-1];el.textContent=t('st3_promo',{date:window.LANG==='uz'?`${day}-${mon}`:`${day} ${mon}`});el.hidden=false})();
 /* галерея */
-const lb=document.createElement('dialog');lb.id='lb';lb.innerHTML='<button class="x" aria-label="Закрыть">×</button><button class="pv" aria-label="Предыдущее фото">‹</button><img alt=""><button class="nx" aria-label="Следующее фото">›</button><p></p>';document.body.append(lb);
+const lb=document.createElement('dialog');lb.id='lb';lb.innerHTML=`<button class="x" aria-label="${t('close')}">×</button><button class="pv" aria-label="${t('prev_photo')}">‹</button><img alt=""><button class="nx" aria-label="${t('next_photo')}">›</button><p></p>`;document.body.append(lb);
 let gp=[],gi=0,tx=0;const show=()=>{lb.querySelector('img').src=gp[gi];lb.querySelector('p').textContent=`${gi+1} / ${gp.length}`},step=n=>{gi=(gi+n+gp.length)%gp.length;show()};
 function openGal(id,i){const o=A.find(x=>x.id===id);if(!o)return;gp=o.photos.length?o.photos:[IMG[o.cat]];gi=i||0;show();lb.showModal()}
 lb.onclick=e=>{const b=e.target.closest('button');if(b&&b.classList.contains('x')||e.target===lb)lb.close();else if(b)step(b.classList.contains('nx')?1:-1)};
@@ -128,11 +149,12 @@ else if(dc){sel(dc.dataset.go);$('#catalog').scrollIntoView()}else if(b)sel(b.da
 else if(l&&!T.closest('a')){sy=scrollY;location.hash='obj-'+l.dataset.i}});
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.dc,.gm')){e.preventDefault();e.target.click()}});
 /* страница объекта */
-const pageHTML=o=>{const ph=o.photos.length?o.photos:[IMG[o.cat]],t=tel(o.phone),done=o.status==='rented',msg=encodeURIComponent(`Здравствуйте! Интересует объект «${o.title}» (${o.city}, ${o.district}).`);
-return`<a class="bk" href="#catalog" onclick="if(sy!=null){history.back();return false}">← Назад к каталогу</a><div class="ob"><div><div class="c3${ph.length>1?'':' one'}" tabindex="0" role="region" aria-roledescription="карусель" aria-label="Фотографии: ${o.title}" data-c3="${o.id}"><div class="c3-stage">${ph.map((s,j)=>`<figure class="c3-it" data-i="${j}"><img src="${s}" alt="${o.title} — фото ${j+1}" draggable="false" ${j>2&&j<ph.length-2?'loading="lazy"':''}></figure>`).join('')}</div>${ph.length>1?'<button type="button" class="c3-nav c3-prev" aria-label="Предыдущее фото">‹</button><button type="button" class="c3-nav c3-next" aria-label="Следующее фото">›</button>':''}<span class="cn2 c3-count">1 / ${ph.length}</span></div>${ph.length>1?`<input type="range" class="c3-bar" min="0" max="${ph.length-1}" step="1" value="0" aria-label="Листать фотографии">`:''}
-<div class="tx"><h3>Описание</h3><p>${o.desc}</p>${o.features&&o.features.length?`<h3>Преимущества</h3><ul class="pl">${o.features.map(y=>`<li>${y}</li>`).join('')}</ul>`:''}<h3>Рядом есть</h3><ul class="pl">${NEAR[o.cat].map(y=>`<li>${y}</li>`).join('')}</ul>${locHTML(o)}</div></div>
-<aside class="sd"><div class="ch"><em>${cat(o.cat).t}</em><em>${o.term}</em><em class="st-${o.status||'free'}">${stl(o)}</em></div><h2>${o.title}</h2><div class="pc">${fmt(o.price)} <small>сум${o.unit?' / '+o.unit:''}</small></div><div class="sg"><div><b>Город</b>${o.city}</div><div><b>Район</b>${o.district}</div><div><b>Площадь</b>${o.area} м²</div><div><b>Этаж / участок</b>${o.floor}</div>${o.rooms?`<div><b>Комнат</b>${o.rooms}</div>`:''}</div>
-${done?`<p class="note">Объект уже ${stl(o).toLowerCase()}. Напишите нам — подберём похожий вариант.</p>`:`<div class="own"><small>Контакты владельца</small><b>${o.owner||OWN.n}</b><a href="${t}">${o.phone||OWN.ph}</a></div><a class="btn" href="${t}">Позвонить владельцу</a>`}<a class="btn w" href="${o.tg||TG}?text=${msg}" target="_blank" rel="noopener">Написать в Telegram</a><button type="button" class="btn w${FAV.includes(o.id)?' on':''}" data-f="${o.id}">♥ Избранное</button></aside></div>${done?'':`<a class="fcall" href="${t}">Позвонить владельцу</a>`}`};
+const unesc=v=>{const d=document.createElement('textarea');d.innerHTML=String(v??'');return d.value};
+const pageHTML=o=>{const ph=o.photos.length?o.photos:[IMG[o.cat]],t_=tel(o.phone),done=o.status==='rented',place=[cityName(o.city),o.district].filter(Boolean).join(', '),msg=encodeURIComponent(unesc(t('tg_msg',{site:location.hostname,t:titleOf(o),place})));const T=titleOf(o);
+return`<a class="bk" href="#catalog" onclick="if(sy!=null){history.back();return false}">${t('back_catalog')}</a><div class="ob"><div><div class="c3${ph.length>1?'':' one'}" tabindex="0" role="region" aria-roledescription="${t('carousel')}" aria-label="${t('photos_of',{t:T})}" data-c3="${o.id}"><div class="c3-stage">${ph.map((s,j)=>`<figure class="c3-it" data-i="${j}"><img src="${s}" alt="${t('photo_n',{t:T,n:j+1})}" draggable="false" ${j>2&&j<ph.length-2?'loading="lazy"':''}></figure>`).join('')}</div>${ph.length>1?`<button type="button" class="c3-nav c3-prev" aria-label="${t('prev_photo')}">‹</button><button type="button" class="c3-nav c3-next" aria-label="${t('next_photo')}">›</button>`:''}<span class="cn2 c3-count">1 / ${ph.length}</span></div>${ph.length>1?`<input type="range" class="c3-bar" min="0" max="${ph.length-1}" step="1" value="0" aria-label="${t('scroll_photos')}">`:''}
+<div class="tx"><h3>${t('desc')}</h3><p>${o.desc}</p>${o.features&&o.features.length?`<h3>${t('features')}</h3><ul class="pl">${o.features.map(y=>`<li>${y}</li>`).join('')}</ul>`:''}<h3>${t('near')}</h3><ul class="pl">${NEAR[o.cat].map(y=>`<li>${y}</li>`).join('')}</ul>${locHTML(o)}</div></div>
+<aside class="sd"><div class="ch"><em>${cat(o.cat).t}</em><em>${termOf(o)}</em><em class="st-${o.status||'free'}">${stl(o)}</em></div><h2>${T}</h2><div class="pc">${fmt(o.price)} <small>${priceUnit(o)}</small></div><div class="sg"><div><b>${t('city')}</b>${cityName(o.city)}</div><div><b>${t('district')}</b>${o.district}</div><div><b>${t('area')}</b>${o.area} ${t('m2')}</div><div><b>${t('floor')}</b>${floorOf(o)}</div>${o.rooms?`<div><b>${t('rooms')}</b>${o.rooms}</div>`:''}</div>
+${done?`<p class="note">${t('already',{s:stl(o).toLowerCase()})}</p>`:`<div class="own"><small>${t('owner_contacts')}</small><b>${o.owner||t('owner_default')}</b><a href="${t_}">${o.phone||OWN.ph}</a></div><a class="btn" href="${t_}">${t('call_owner')}</a>`}<a class="btn w" href="${o.tg||TG}?text=${msg}" target="_blank" rel="noopener">${t('write_tg')}</a><button type="button" class="btn w${FAV.includes(o.id)?' on':''}" data-f="${o.id}">${t('fav')}</button></aside></div>${done?'':`<a class="fcall" href="${t_}">${t('call_owner')}</a>`}`};
 const MD=document.querySelector('meta[name=description]'),D0=MD.content;const OG=document.querySelector('meta[property="og:image"]');if(OG)OG.content=new URL(siteAsset('social_preview'),document.baseURI).href;
 function ld(o){let s=$('#ldo');if(!s){s=document.createElement('script');s.id='ldo';s.type='application/ld+json';document.head.append(s)}s.textContent=o?JSON.stringify({'@context':'https://schema.org','@type':'Product',name:o.title,description:o.desc,image:o.photos[0]||IMG[o.cat],offers:{'@type':'Offer',priceCurrency:'UZS',price:o.price,availability:o.status==='free'?'https://schema.org/InStock':'https://schema.org/SoldOut'}}):''}
 /* ===== 3D-карусель фото на странице объекта: свайп/перетаскивание, стрелки, ползунок, по кругу ===== */
@@ -178,9 +200,9 @@ const GEO={'Алмалык':[40.8447,69.5983,'Ташкентская облас�
 'Андижан':[40.7821,72.3442,'Андижанская область'],'Наманган':[40.9983,71.6726,'Наманганская область'],'Нукус':[42.4600,59.6100,'Республика Каракалпакстан'],
 'Фергана':[40.3864,71.7864,'Ферганская область'],'Карши':[38.8606,65.7891,'Кашкадарьинская область'],'Бухара':[39.7747,64.4286,'Бухарская область'],'Коканд':[40.5286,70.9425,'Ферганская область']};
 const PIN='<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
-function locHTML(o){const g=GEO[o.city];if(!g)return'';const place=o.district&&o.district!==o.city?`${o.district}, ${o.city}`:o.city;
-  return`<div class="loc" data-lat="${g[0]}" data-lon="${g[1]}"><div class="loc-tx"><i>${PIN}</i><div><b>${place}</b><span>${g[2]}</span><em class="loc-dist"><button type="button" class="loc-me">📍 Узнать расстояние от меня</button></em><small>Местоположение приблизительное. Точный адрес сообщит владелец.</small></div></div>
-  <a class="loc-map" href="https://yandex.uz/maps/?ll=${g[1]},${g[0]}&z=13&pt=${g[1]},${g[0]}" target="_blank" rel="noopener" aria-label="Открыть на карте"><span class="loc-ring"></span></a></div>`}
+function locHTML(o){const g=GEO[o.city];if(!g)return'';const place=o.district&&o.district!==o.city?`${o.district}, ${cityName(o.city)}`:cityName(o.city);
+  return`<div class="loc" data-lat="${g[0]}" data-lon="${g[1]}"><div class="loc-tx"><i>${PIN}</i><div><b>${place}</b><span>${regionName(g[2])}</span><em class="loc-dist"><button type="button" class="loc-me">${t('loc_me')}</button></em><small>${t('loc_note')}</small></div></div>
+  <a class="loc-map" href="https://yandex.uz/maps/?ll=${g[1]},${g[0]}&z=13&pt=${g[1]},${g[0]}" target="_blank" rel="noopener" aria-label="${t('loc_map')}"><span class="loc-ring"></span></a></div>`}
 function loadLeaflet(){if(window.L)return Promise.resolve();if(loadLeaflet.p)return loadLeaflet.p;
   const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.append(css);
   return loadLeaflet.p=new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';sc.onload=ok;sc.onerror=no;document.head.append(sc)})}
@@ -189,12 +211,12 @@ function initLoc(box){if(!box)return;const lat=+box.dataset.lat,lon=+box.dataset
   loadLeaflet().then(()=>{const m=L.map(map,{center:[lat,lon],zoom:13,zoomControl:false,attributionControl:true,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false});
     m.attributionControl.setPrefix(false);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(m);
     L.circle([lat,lon],{radius:450,color:'#3b6cf6',weight:8,fillColor:'#7d9cf8',fillOpacity:.45}).addTo(m);map.classList.add('ready')}).catch(()=>{});
-  const showDist=()=>navigator.geolocation.getCurrentPosition(p=>{const k=km(p.coords.latitude,p.coords.longitude,lat,lon);dist.textContent=k<1?'Совсем рядом с вами':`В ${k.toLocaleString('ru-RU')} км от вас`},()=>{dist.textContent='Не удалось определить ваше местоположение'},{maximumAge:600000,timeout:10000});
+  const showDist=()=>navigator.geolocation.getCurrentPosition(p=>{const k=km(p.coords.latitude,p.coords.longitude,lat,lon);dist.textContent=k<1?t('loc_near'):t('loc_km',{n:k.toLocaleString('ru-RU')})},()=>{dist.textContent=t('loc_fail')},{maximumAge:600000,timeout:10000});
   if(!navigator.geolocation){dist.remove();return}
-  dist.querySelector('.loc-me').onclick=e=>{e.stopPropagation();dist.textContent='Определяем…';showDist()};
+  dist.querySelector('.loc-me').onclick=e=>{e.stopPropagation();dist.textContent=t('loc_wait');showDist()};
   navigator.permissions?.query({name:'geolocation'}).then(r=>{if(r.state==='granted')showDist()}).catch(()=>{})}
 function route(){const m=/^#obj-(\d+)$/.exec(location.hash),o=m&&A.find(x=>x.id===+m[1]),b=document.body;
-if(o){$('#obj').innerHTML=pageHTML(o);initC3($('#obj .c3'),o.id);initLoc($('#obj .loc'));bind($('#obj'));b.classList.add('pg');scrollTo({top:0,behavior:'instant'});document.title=`${o.title}, ${o.district}, ${o.city} — ${fmt(o.price)} сум`;MD.content=o.desc;ld(o)}
+if(o){$('#obj').innerHTML=pageHTML(o);initC3($('#obj .c3'),o.id);initLoc($('#obj .loc'));bind($('#obj'));b.classList.add('pg');scrollTo({top:0,behavior:'instant'});document.title=unesc(`${titleOf(o)}, ${o.district}, ${cityName(o.city)} — ${fmt(o.price)} ${t('sum')}`);MD.content=o.desc;ld(o)}
 else if(b.classList.contains('pg')){b.classList.remove('pg');document.title=T0;MD.content=D0;ld();sy!=null?scrollTo({top:sy,behavior:'instant'}):$('#catalog').scrollIntoView()}}
 function setCity(c){city=c;try{localStorage.setItem('city',c)}catch(_){}
 const configured=HERO[c]||[];const h=configured.some(Boolean)?configured:null;
@@ -202,15 +224,16 @@ if(h){
   /* Resolve asset paths against the actual page URL, including installations in subfolders. */
   cityHeroMobile.srcset=new URL(h[1]||h[0],document.baseURI).href;
   cityHeroImage.src=new URL(h[0]||h[1],document.baseURI).href;
-  cityHeroImage.alt='Городской пейзаж — '+c;
+  cityHeroImage.alt=t('hero_alt')+' — '+cityName(c);
   cityHero.hidden=false;
 }else{
   cityHero.hidden=true;
   cityHeroMobile.removeAttribute('srcset');
   cityHeroImage.removeAttribute('src');
 }
-$('#cv').textContent=c;$$('#cu button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));$$('.cl').forEach(e=>e.textContent=CT[c].p);$$('.cn').forEach(e=>e.textContent=c);
+$('#cv').textContent=cityName(c);$$('#cu button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));$$('.cl').forEach(e=>e.textContent=window.LANG==='uz'?cityIn(c):CT[c].p);$$('.cn').forEach(e=>e.textContent=cityName(c));
 fillDist();drawDirs();draw()}
+$$('#cu button').forEach(b=>{b.textContent=cityName(b.dataset.c)});
 const cs=$('#cs'),cbn=$('#cb'),cu=$('#cu'),cls=()=>{cu.hidden=true;cs.classList.remove('open');cbn.setAttribute('aria-expanded','false')};
 cbn.onclick=()=>{const o=cu.hidden;cu.hidden=!o;cs.classList.toggle('open',o);cbn.setAttribute('aria-expanded',String(o))};
 cu.onclick=e=>{const b=e.target.closest('button');if(b){setCity(b.dataset.c);cls()}};
@@ -258,6 +281,6 @@ async function loadBotAds(){
 
 let sv=null;try{sv=localStorage.getItem('city')}catch(_){}
 /* Ссылка из бота: ?city=Ташкент&deal=sale — открыть сразу нужный город и тип сделки. */
-const QS=new URLSearchParams(location.search),qCity=QS.get('city');if(QS.get('deal')==='sale')dl='Приобрести';
+const QS=new URLSearchParams(location.search),qCity=QS.get('city');if(QS.get('deal')==='sale')dl='Приобрести';else if(QS.get('deal')==='daily')dl='Посуточно';
 setCity(CT[qCity]?qCity:CT[sv]?sv:'Алмалык');route();
 loadBotListings();loadBotAds();

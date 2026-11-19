@@ -15,6 +15,9 @@ TRANSLATIONS = {
     "ru": {
         # --- главное меню
         "menu_list": "📝 Подать объявление",
+        "promo_line": "🎁 Акция до {until}: первое объявление — бесплатно!",
+        "promo_free_sent": "🎁 Акция «Первое объявление бесплатно»!\n\nОплачивать ничего не нужно. Объявление {number} отправлено на проверку — после неё оно появится на сайте и в канале вашего города. Мы пришлём уведомление ✨",
+        "promo_fee_line": "🎁 Акция: первое объявление бесплатно (до {until})",
         "menu_my": "📋 Мои объявления",
         "my_empty": "📋 У вас пока нет объявлений.\n\nНажмите «📝 Подать объявление», чтобы разместить первое — это займёт пару минут.",
         "my_title": "📋 Ваши объявления ({count}):",
@@ -70,6 +73,21 @@ TRANSLATIONS = {
         "deal_prompt": "Выберите тип сделки:",
         "deal_rent": "🔑 Аренда",
         "deal_sale": "💰 Продажа",
+        "deal_daily": "🌙 Посуточно",
+        "daily_price": "Цена за сутки",
+        "per_day": "/ сутки",
+        "price_prompt_daily": "Введите цену за одни сутки (в сумах).\nМинимальная цена — 100 000 сум за сутки.",
+        "min_daily_price": "❗ Минимальная цена посуточной аренды — 100 000 сум за сутки. Введите другую цену.",
+        "search_deal_daily": "о посуточной аренде",
+        "preview_intro": "👀 Так ваше объявление увидят в Telegram-канале города и на сайте:",
+        "preview_more_photos": "📸 Ещё фото: {count} — они будут в галерее на сайте.",
+        "preview_question": "Всё верно? Если нужно что-то исправить — нажмите «◀️ Назад» или начните заново через «📝 Подать объявление».",
+        "preview_confirm": "✅ Всё верно — продолжить",
+        "remind_text": "🔔 Ваше объявление {number} ({title}) опубликовано уже 25 дней.\n\nОно ещё актуально? Если объект уже {done_word}, отметьте это — объявление уберётся с сайта, и клиенты не будут беспокоить вас звонками.",
+        "remind_yes": "✅ Да, актуально",
+        "remind_yes_ok": "👍 Отлично! Объявление остаётся на сайте. Напомним снова через 25 дней.",
+        "remind_done_word_rent": "сдан",
+        "remind_done_word_sale": "продан",
         "area_prompt": "Введите площадь (в м²):",
         "rooms_prompt": "Сколько комнат?",
         "rooms_5plus": "5+",
@@ -128,6 +146,8 @@ TRANSLATIONS = {
             "💰 Тарифы размещения\n\n"
             "🔑 Аренда — 1% от цены аренды в месяц.\n"
             "   Минимальная цена аренды — 1 000 000 сум.\n\n"
+            "🌙 Посуточно — 10% от цены одних суток.\n"
+            "   Минимальная цена — 100 000 сум за сутки.\n\n"
             "💰 Продажа — 0,1% от цены объекта.\n"
             "   Минимальная цена объекта — 5 000 $.\n\n"
             "📢 Реклама на сайте:\n{ad_tariffs}\n\n"
@@ -219,6 +239,9 @@ TRANSLATIONS = {
     },
     "uz": {
         "menu_list": "📝 E'lon berish",
+        "promo_line": "🎁 Aksiya {until} gacha: birinchi e'lon — bepul!",
+        "promo_free_sent": "🎁 «Birinchi e'lon bepul» aksiyasi!\n\nHech narsa to'lash shart emas. {number} e'loni tekshiruvga yuborildi — shundan so'ng u saytda va shahringiz kanalida paydo bo'ladi. Sizga xabar beramiz ✨",
+        "promo_fee_line": "🎁 Aksiya: birinchi e'lon bepul ({until} gacha)",
         "menu_my": "📋 Mening e'lonlarim",
         "my_empty": "📋 Sizda hozircha e'lonlar yo'q.\n\nBirinchisini joylash uchun «📝 E'lon berish» tugmasini bosing — bu bir necha daqiqa oladi.",
         "my_title": "📋 Sizning e'lonlaringiz ({count}):",
@@ -273,6 +296,21 @@ TRANSLATIONS = {
         "deal_prompt": "Bitim turini tanlang:",
         "deal_rent": "🔑 Ijara",
         "deal_sale": "💰 Sotish",
+        "deal_daily": "🌙 Kunlik",
+        "daily_price": "Bir sutka narxi",
+        "per_day": "/ sutka",
+        "price_prompt_daily": "Bir sutka narxini kiriting (so'mda).\nEng kam narx — sutkasiga 100 000 so'm.",
+        "min_daily_price": "❗ Kunlik ijaraning eng kam narxi — sutkasiga 100 000 so'm. Boshqa narx kiriting.",
+        "search_deal_daily": "kunlik ijara",
+        "preview_intro": "👀 E'loningiz shahar Telegram-kanalida va saytda shunday ko'rinadi:",
+        "preview_more_photos": "📸 Yana {count} ta rasm — ular saytdagi galereyada bo'ladi.",
+        "preview_question": "Hammasi to'g'rimi? Biror narsani tuzatish kerak bo'lsa — «◀️ Orqaga» tugmasini bosing yoki «📝 E'lon berish» orqali qaytadan boshlang.",
+        "preview_confirm": "✅ Hammasi to'g'ri — davom etish",
+        "remind_text": "🔔 {number} e'loningiz ({title}) 25 kundan beri saytda turibdi.\n\nU hali dolzarbmi? Agar obyekt allaqachon {done_word} bo'lsa, belgilab qo'ying — e'lon saytdan olinadi va mijozlar sizni bezovta qilmaydi.",
+        "remind_yes": "✅ Ha, dolzarb",
+        "remind_yes_ok": "👍 Ajoyib! E'lon saytda qoladi. 25 kundan keyin yana eslatamiz.",
+        "remind_done_word_rent": "ijaraga berilgan",
+        "remind_done_word_sale": "sotilgan",
         "area_prompt": "Maydonni kiriting (m² da):",
         "rooms_prompt": "Nechta xona?",
         "rooms_5plus": "5+",
@@ -328,6 +366,8 @@ TRANSLATIONS = {
             "💰 Joylashtirish tariflari\n\n"
             "🔑 Ijara — oylik ijara narxining 1%.\n"
             "   Eng kam ijara narxi — 1 000 000 so'm.\n\n"
+            "🌙 Kunlik — bir sutka narxining 10%.\n"
+            "   Eng kam narx — sutkasiga 100 000 so'm.\n\n"
             "💰 Sotish — obyekt narxining 0,1%.\n"
             "   Obyektning eng kam narxi — 5 000 $.\n\n"
             "📢 Saytda reklama:\n{ad_tariffs}\n\n"

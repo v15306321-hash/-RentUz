@@ -119,7 +119,7 @@ def property_keyboard(language: str) -> ReplyKeyboardMarkup:
 
 
 def deal_keyboard(language: str) -> ReplyKeyboardMarkup:
-    return nav_rows([[tr(language, "deal_rent"), tr(language, "deal_sale")]], language)
+    return nav_rows([[tr(language, "deal_rent"), tr(language, "deal_daily")], [tr(language, "deal_sale")]], language)
 
 
 def phone_keyboard(language: str) -> ReplyKeyboardMarkup:

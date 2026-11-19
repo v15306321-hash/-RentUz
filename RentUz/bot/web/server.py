@@ -47,7 +47,6 @@ def _number(value):
 
 
 def to_site_listing(order: dict, base_url: str) -> dict:
-    is_sale = order.get("purpose") == "sale"
     floor = order.get("property_floor")
     username = order.get("contact_username")
     return {
@@ -62,8 +61,11 @@ def to_site_listing(order: dict, base_url: str) -> dict:
         "rooms": int(order.get("rooms") or 0),
         "floor": f"{floor} этаж" if floor is not None else "—",
         "price": int(order.get("price_uzs") or 0),
-        "unit": "" if is_sale else "мес",
-        "term": "Продажа" if is_sale else "На месяц",
+        "unit": {"sale": "", "daily": "сутки"}.get(order.get("purpose"), "мес"),
+        "term": {"sale": "Продажа", "daily": "Посуточно"}.get(order.get("purpose"), "На месяц"),
+        "deal": order.get("purpose") or "rent",
+        "kind": order.get("property_type"),
+        "floor_num": floor,
         "status": "rented" if order.get("status") == "rented" else "free",
         "desc": order.get("description") or f"{_title(order)}, {_number(order.get('area'))} м². Подробности уточняйте у владельца.",
         "features": [],
