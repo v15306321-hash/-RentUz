@@ -134,10 +134,12 @@ function applyI18n(root){
   document.querySelectorAll('.lng button').forEach(b=>{const on=b.dataset.lang===window.LANG;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
 }
 function setLang(l){
-  if(l===window.LANG)return;
+  if(l!=='ru'&&l!=='uz')return;
   try{localStorage.setItem('lang',l)}catch(_){}
-  const u=new URL(location.href);u.searchParams.delete('lang');
-  location.replace(u.pathname+u.search+u.hash); /* перезагрузка — самый надёжный способ перевести всю страницу */
+  /* Язык передаётся в адресе (?lang=uz): смена параметра всегда перезагружает страницу,
+     даже если в адресе есть #якорь (раньше из-за #directions перезагрузки не было). */
+  const u=new URL(location.href);u.searchParams.set('lang',l);
+  if(u.href===location.href)location.reload();else location.assign(u.href);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('.lng button');if(b){e.preventDefault();setLang(b.dataset.lang)}});
 applyI18n();
