@@ -223,3 +223,13 @@ dialog::backdrop{background:rgba(8,18,32,.72);-webkit-backdrop-filter:blur(6px);
 /* ===== Акция в шаге «Оплатите размещение» ===== */
 .os .promo{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:999px;background:#fff;color:#a23b22;font:600 13px/1.3 Inter,system-ui,sans-serif;font-style:normal}
 .os .promo[hidden]{display:none}
+
+/* ===== Алмалык на компьютере: фоновое видео, которое проигрывается прокруткой ===== */
+#home .hero-video{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+#home .hero-video[hidden],#heroScrub[hidden]{display:none!important}
+/* Первый экран закреплён: пока идёт видео, он стоит на месте; потом его перекрывает остальная страница. */
+body.scrub #home{position:sticky;top:0;height:100vh;height:100svh;min-height:0}
+body.scrub #heroScrub{height:var(--scrub,260vh)}
+body.scrub .wrap,body.scrub footer{position:relative;z-index:2}
+body.scrub .wrap{background:var(--bg);border-radius:clamp(22px,3vw,40px) clamp(22px,3vw,40px) 0 0;box-shadow:0 -30px 60px -24px rgba(8,18,32,.55)}
+.pg>#heroScrub{display:none!important}
