@@ -6,6 +6,7 @@
   window.LANG=(q==='uz'||q==='ru')?q:(saved==='uz'?'uz':'ru');
   try{if(q==='uz'||q==='ru')localStorage.setItem('lang',q)}catch(_){}
   document.documentElement.lang=window.LANG==='uz'?'uz':'ru';
+  if(window.LANG==='uz'){const c=document.getElementById('canon');if(c)c.href=c.href.split('?')[0]+'?lang=uz'}
 })();
 
 const I18N={
@@ -38,6 +39,13 @@ ru:{
   st3_t:'3. Оплатите размещение',st3_d:'Бот рассчитает комиссию и предложит удобный способ оплаты.',
   st3_promo:'🎁 Первое объявление — бесплатно до {date}',
   st4_t:'4. Автоматическая публикация',st4_d:'После проверки объявление появится на сайте и в Telegram-канале вашего города.',
+  faq_title:"Частые вопросы",faq_text:"Коротко о том, как искать и размещать недвижимость на RENT UZBEKISTAN.",
+  faq1_q:"Как снять или купить квартиру в Узбекистане через RENT UZBEKISTAN?",faq1_a:"Выберите город в шапке сайта, затем тип сделки — посуточно, на месяц или покупка — и категорию. Фильтры помогут подобрать объект по району, цене, площади и количеству комнат. На странице объекта есть фотографии, описание и телефон владельца — звоните напрямую.",
+  faq2_q:"В каких городах есть объявления?",faq2_a:"Алмалык, Ташкент, Самарканд, Андижан, Наманган, Нукус, Фергана, Карши, Бухара и Коканд.",
+  faq3_q:"Как разместить объявление о сдаче или продаже недвижимости?",faq3_a:"Откройте Telegram-бот @Arenda_UZB_bot, нажмите «Подать объявление» и заполните анкету: город и район, параметры объекта, цена, телефон и фотографии. После проверки объявление появится на сайте и в Telegram-канале вашего города.",
+  faq4_q:"Сколько стоит размещение объявления?",faq4_a:"Аренда на месяц — 1% от месячной цены аренды, посуточная аренда — 10% от цены одних суток, продажа — 0,1% от цены объекта. Точную сумму бот рассчитает сам.",
+  faq5_q:"Какую недвижимость можно найти?",faq5_a:"Квартиры, дома и дачи, офисы, магазины и склады — в аренду посуточно, на месяц и на продажу.",
+  faq6_q:"Есть ли сайт на узбекском языке?",faq6_a:"Да. Переключите язык кнопкой RU | UZ в шапке сайта или откройте ссылку с параметром ?lang=uz.",
   safe_title:'Важная информация',safe_text:'Пожалуйста, ознакомьтесь с рекомендациями по безопасности до того, как договариваться о сделке.',
   safe_note:'<b>В целях безопасности</b> сообщаем: сайт носит информационный характер, не имеет отношения к продавцам и арендодателям и не является стороной сделок между ними и клиентами.',
   safe1_t:'Проверяйте документы',safe1_d:'Перед покупкой или арендой обязательно сверьте полный перечень документов на объект.',
@@ -86,6 +94,13 @@ uz:{
   st3_t:'3. Joylashtirish uchun to‘lang',st3_d:'Bot komissiyani hisoblaydi va qulay to‘lov usulini taklif qiladi.',
   st3_promo:'🎁 Birinchi e’lon — {date} gacha bepul',
   st4_t:'4. Avtomatik e’lon qilish',st4_d:'Tekshiruvdan so‘ng e’lon saytda va shahringiz Telegram-kanalida paydo bo‘ladi.',
+  faq_title:"Ko‘p beriladigan savollar",faq_text:"RENT UZBEKISTAN’da ko‘chmas mulkni qanday izlash va joylash haqida qisqacha.",
+  faq1_q:"RENT UZBEKISTAN orqali O‘zbekistonda kvartirani qanday ijaraga olish yoki sotib olish mumkin?",faq1_a:"Sayt yuqorisida shaharni, so‘ng bitim turini — kunlik, oylik yoki sotib olish — va toifani tanlang. Filtrlar obyektni tuman, narx, maydon va xonalar soni bo‘yicha tanlashga yordam beradi. Obyekt sahifasida rasmlar, tavsif va egasining telefoni bor — to‘g‘ridan-to‘g‘ri qo‘ng‘iroq qiling.",
+  faq2_q:"Qaysi shaharlarda e’lonlar bor?",faq2_a:"Olmaliq, Toshkent, Samarqand, Andijon, Namangan, Nukus, Farg‘ona, Qarshi, Buxoro va Qo‘qon.",
+  faq3_q:"Ijara yoki sotuv haqida e’lonni qanday joylash mumkin?",faq3_a:"Telegram’da @Arenda_UZB_bot ni oching, «E’lon berish» tugmasini bosing va anketani to‘ldiring: shahar va tuman, obyekt parametrlari, narx, telefon va rasmlar. Tekshiruvdan so‘ng e’lon saytda va shahringiz Telegram-kanalida paydo bo‘ladi.",
+  faq4_q:"E’lon joylashtirish qancha turadi?",faq4_a:"Oylik ijara — oylik ijara narxining 1%, kunlik ijara — bir kunlik narxning 10%, sotuv — obyekt narxining 0,1%. Aniq summani botning o‘zi hisoblaydi.",
+  faq5_q:"Qanday ko‘chmas mulkni topish mumkin?",faq5_a:"Kvartiralar, hovli va dachalar, ofislar, do‘konlar va omborlar — kunlik, oylik ijaraga va sotuvga.",
+  faq6_q:"Sayt o‘zbek tilida bormi?",faq6_a:"Ha. Sayt yuqorisidagi RU | UZ tugmasi bilan tilni almashtiring yoki ?lang=uz parametrli havolani oching.",
   safe_title:'Muhim ma’lumot',safe_text:'Iltimos, bitim haqida kelishishdan oldin xavfsizlik bo‘yicha tavsiyalar bilan tanishib chiqing.',
   safe_note:'<b>Xavfsizlik maqsadida</b> ma’lum qilamiz: sayt axborot xarakteriga ega, sotuvchilar va ijaraga beruvchilarga aloqasi yo‘q va ular bilan mijozlar o‘rtasidagi bitimlar tarafi hisoblanmaydi.',
   safe1_t:'Hujjatlarni tekshiring',safe1_d:'Sotib olish yoki ijaraga olishdan oldin obyekt hujjatlarining to‘liq ro‘yxatini albatta tekshiring.',

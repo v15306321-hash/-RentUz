@@ -233,3 +233,12 @@ body.scrub #heroScrub{height:var(--scrub,260vh)}
 body.scrub .wrap,body.scrub footer{position:relative;z-index:2}
 body.scrub .wrap{background:var(--bg);border-radius:clamp(22px,3vw,40px) clamp(22px,3vw,40px) 0 0;box-shadow:0 -30px 60px -24px rgba(8,18,32,.55)}
 .pg>#heroScrub{display:none!important}
+
+/* ===== Частые вопросы ===== */
+.fqs{display:grid;gap:10px;max-width:900px}
+.fq{background:var(--card,#fffaf2);border:1px solid var(--ln,#e5ddcc);border-radius:18px;padding:0 22px}
+.fq summary{cursor:pointer;list-style:none;padding:18px 32px 18px 0;font-weight:600;position:relative}
+.fq summary::-webkit-details-marker{display:none}
+.fq summary:after{content:"+";position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:22px;line-height:1;color:var(--accent,#b4573f)}
+.fq[open] summary:after{content:"−"}
+.fq p{margin:0 0 18px;color:var(--mut,#6a6358)}
