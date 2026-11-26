@@ -237,7 +237,7 @@ if(h){
   cityHeroImage.removeAttribute('src');
 }
 $('#cv').textContent=cityName(c);$$('#cu button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));$$('.cl').forEach(e=>e.textContent=window.LANG==='uz'?cityIn(c):CT[c].p);$$('.cn').forEach(e=>e.textContent=cityName(c));
-fillDist();drawDirs();draw()}
+fillDist();drawDirs();draw();heroVideo()}
 $$('#cu button').forEach(b=>{b.textContent=cityName(b.dataset.c)});
 const cs=$('#cs'),cbn=$('#cb'),cu=$('#cu'),cls=()=>{cu.hidden=true;cs.classList.remove('open');cbn.setAttribute('aria-expanded','false')};
 cbn.onclick=()=>{const o=cu.hidden;cu.hidden=!o;cs.classList.toggle('open',o);cbn.setAttribute('aria-expanded',String(o))};
@@ -245,7 +245,7 @@ cu.onclick=e=>{const b=e.target.closest('button');if(b){setCity(b.dataset.c);cls
 document.addEventListener('click',e=>{if(!cs.contains(e.target))cls()});addEventListener('keydown',e=>{if(e.key==='Escape')cls()});addEventListener('hashchange',route);
 /* header, burger, scroll-spy */
 const hd=$('#hd'),bgr=$('#bgr');
-new IntersectionObserver(([e])=>hd.classList.toggle('on',!e.isIntersecting),{rootMargin:'-80px 0px 0px 0px'}).observe($('#home'));
+new IntersectionObserver(([e])=>{if(!document.body.classList.contains('scrub'))hd.classList.toggle('on',!e.isIntersecting)},{rootMargin:'-80px 0px 0px 0px'}).observe($('#home'));
 bgr.onclick=()=>bgr.setAttribute('aria-expanded',hd.classList.toggle('open'));$('#lk').onclick=e=>{if(e.target.closest('a')){hd.classList.remove('open');bgr.setAttribute('aria-expanded','false')}};
 const nav=$$('#lk a:not(.btn)');
 const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)nav.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}),{rootMargin:'-40% 0px -55% 0px'});
@@ -283,6 +283,42 @@ async function loadBotAds(){
     show();if(ads.length>1)setInterval(show,8000);
   }catch(error){console.warn('Ads API is unavailable.',error)}
 }
+
+/* ===== Алмалык на компьютере: фоновое видео первого экрана, которое проигрывается прокруткой =====
+   Видео не играет само: каждый сдвиг прокрутки показывает следующий кадр. Когда видео дошло до конца,
+   остальная страница поднимается снизу и перекрывает его, а само видео остаётся на месте. */
+const HERO_VIDEO={'Алмалык':{src:'assets/video/almalyk-hero.mp4',poster:'assets/video/almalyk-hero-poster.jpg'}};
+const hv=$('#heroVideo'),hs=$('#heroScrub'),homeEl=$('#home'),wrapEl=$('.wrap'),DESK=matchMedia('(min-width:761px)');
+let scrubOn=false,vTarget=0,vRaf=0,vKey='',vFailed=false;
+function scrubTick(){
+  vRaf=0;if(!scrubOn)return;
+  const top=wrapEl.getBoundingClientRect().top;
+  homeEl.style.visibility=top<=0?'hidden':'';
+  hd.classList.toggle('on',top<80);
+  const dur=hv.duration,d=hs.offsetHeight;if(!dur||!d)return;
+  vTarget=Math.min(1,Math.max(0,scrollY/d))*Math.max(0,dur-0.05);
+  if(!hv.seeking&&Math.abs(hv.currentTime-vTarget)>0.02)hv.currentTime=vTarget;
+}
+const scrubReq=()=>{if(scrubOn&&!vRaf)vRaf=requestAnimationFrame(scrubTick)};
+hv.addEventListener('seeked',()=>{if(scrubOn&&Math.abs(hv.currentTime-vTarget)>0.02)hv.currentTime=vTarget});
+hv.addEventListener('loadedmetadata',scrubReq);
+hv.addEventListener('error',()=>{vFailed=true;heroVideo()});
+addEventListener('scroll',scrubReq,{passive:true});addEventListener('resize',scrubReq);
+function heroVideo(){
+  const cfg=HERO_VIDEO[city],on=!!cfg&&DESK.matches&&!vFailed;
+  if(on&&vKey!==cfg.src){
+    vKey=cfg.src;const url=absUrl(cfg.src);hv.poster=absUrl(cfg.poster);
+    /* Видео скачивается целиком заранее: так перемотка прокруткой работает плавно на любом хостинге. */
+    fetch(url).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.blob()})
+      .then(b=>{if(vKey===cfg.src)hv.src=URL.createObjectURL(b)})
+      .catch(()=>{if(vKey===cfg.src)hv.src=url});
+  }
+  hv.hidden=!on;hs.hidden=!on;document.body.classList.toggle('scrub',on);
+  if(on)cityHero.hidden=true;else cityHero.hidden=!cityHeroImage.getAttribute('src');
+  if(scrubOn&&!on){homeEl.style.visibility='';hd.classList.toggle('on',homeEl.getBoundingClientRect().bottom<80)}
+  scrubOn=on;scrubReq();
+}
+DESK.addEventListener?.('change',heroVideo);
 
 let sv=null;try{sv=localStorage.getItem('city')}catch(_){}
 /* Ссылка из бота: ?city=Ташкент&deal=sale — открыть сразу нужный город и тип сделки. */
